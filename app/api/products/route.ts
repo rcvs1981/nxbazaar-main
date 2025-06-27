@@ -1,24 +1,22 @@
-import { db } from "@/lib/db";
+import {db} from "@/lib/db";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
-// Type definitions for your product data
-interface ProductData {
-  barcode: string;
+interface ProductPostData {
+  barcode?: string;
   categoryId: string;
-  description: string;
+  description?: string;
   farmerId: string;
-  isActive: boolean;
-  isWholesale: boolean;
-  productCode: string;
+  isActive?: boolean;
+  isWholesale?: boolean;
+  productCode?: string;
   productPrice: string | number;
   salePrice: string | number;
-  sku: string;
+  sku?: string;
   slug: string;
-  tags: string[];
+  tags?: string[];
   title: string;
-  unit: string;
+  unit?: string;
   wholesalePrice: string | number;
   wholesaleQty: string | number;
   productStock: string | number;
@@ -26,59 +24,28 @@ interface ProductData {
   productImages: string[];
 }
 
-// Type for the where clause
-type ProductWhereInput = Prisma.ProductWhereInput & {
-  salePrice?: {
-    gte?: number;
-    lte?: number;
-  };
-};
-
-// Type for the orderBy clause
-type ProductOrderByInput = Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[];
-
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const {
-      barcode,
-      categoryId,
-      description,
-      farmerId,
-      isActive,
-      isWholesale,
-      productCode,
-      productPrice,
-      salePrice,
-      sku,
-      slug,
-      tags,
-      title,
-      unit,
-      wholesalePrice,
-      wholesaleQty,
-      productStock,
-      qty,
-      productImages,
-    } = (await request.json()) as ProductData;
-
+    const data: ProductPostData = await request.json();
+    
     // Validate required fields
-    if (!title || !slug || !categoryId || !farmerId) {
+    if (!data.title || !data.slug || !data.categoryId || !data.farmerId) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { data: null, message: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Check if product already exists
+    // Check if product exists
     const existingProduct = await db.product.findUnique({
-      where: { slug },
+      where: { slug: data.slug },
     });
 
     if (existingProduct) {
       return NextResponse.json(
         {
           data: null,
-          message: `Product (${title}) already exists in the Database`,
+          message: `Product (${data.title}) already exists in the Database`,
         },
         { status: 409 }
       );
@@ -87,26 +54,26 @@ export async function POST(request: NextRequest) {
     // Create new product
     const newProduct = await db.product.create({
       data: {
-        barcode,
-        categoryId,
-        description,
-        userId: farmerId,
-        productImages,
-        imageUrl: productImages[0] || "",
-        isActive,
-        isWholesale,
-        productCode,
-        productPrice: parseFloat(productPrice.toString()),
-        salePrice: parseFloat(salePrice.toString()),
-        sku,
-        slug,
-        tags,
-        title,
-        unit,
-        wholesalePrice: parseFloat(wholesalePrice.toString()),
-        wholesaleQty: parseInt(wholesaleQty.toString()),
-        productStock: parseInt(productStock.toString()),
-        qty: parseInt(qty.toString()),
+        barcode: data.barcode,
+        categoryId: data.categoryId,
+        description: data.description,
+        userId: data.farmerId,
+        productImages: data.productImages,
+        imageUrl: data.productImages[0],
+        isActive: data.isActive ?? true,
+        isWholesale: data.isWholesale ?? false,
+        productCode: data.productCode,
+        productPrice: parseFloat(data.productPrice.toString()),
+        salePrice: parseFloat(data.salePrice.toString()),
+        sku: data.sku,
+        slug: data.slug,
+        tags: data.tags ?? [],
+        title: data.title,
+        unit: data.unit,
+        wholesalePrice: parseFloat(data.wholesalePrice.toString()),
+        wholesaleQty: parseInt(data.wholesaleQty.toString()),
+        productStock: parseInt(data.productStock.toString()),
+        qty: parseInt(data.qty.toString()),
       },
     });
 
@@ -116,16 +83,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         message: "Failed to create Product",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: process.env.NODE_ENV === "development" ? error : null,
       },
       { status: 500 }
     );
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
-    const { searchParams } = request.nextUrl;
+    const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get("catId");
     const sortBy = searchParams.get("sort");
     const min = searchParams.get("min");
@@ -133,8 +100,8 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = 3;
 
-    // Build the where clause with proper typing
-    const where: ProductWhereInput = {};
+    // Build where clause
+    const where: Prisma.ProductWhereInput = { isActive: true };
     
     if (categoryId) where.categoryId = categoryId;
     
@@ -144,35 +111,31 @@ export async function GET(request: NextRequest) {
       if (max) where.salePrice.lte = parseFloat(max);
     }
 
-    // Build the orderBy clause with proper typing
-    const orderBy: ProductOrderByInput = [];
-    
-    if (sortBy === "asc" || sortBy === "desc") {
-      orderBy.push({ salePrice: sortBy });
-    } else {
-      orderBy.push({ createdAt: "desc" });
-    }
+    // Build orderBy
+    const orderBy: Prisma.ProductOrderByWithRelationInput[] = 
+      sortBy === "asc" || sortBy === "desc" 
+        ? [{ salePrice: sortBy }] 
+        : [{ createdAt: "desc" }];
 
-    // Fetch products with pagination
-    const products = await db.product.findMany({
-      where,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      orderBy,
-    });
-
-    // Get total count for pagination metadata
-    const totalCount = await db.product.count({ where });
-    const totalPages = Math.ceil(totalCount / pageSize);
+    // Fetch products
+    const [products, totalCount] = await Promise.all([
+      db.product.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy,
+      }),
+      db.product.count({ where }),
+    ]);
 
     return NextResponse.json({
       data: products,
       pagination: {
         currentPage: page,
-        totalPages,
         pageSize,
         totalCount,
-        hasNextPage: page < totalPages,
+        totalPages: Math.ceil(totalCount / pageSize),
+        hasNextPage: page * pageSize < totalCount,
         hasPreviousPage: page > 1,
       },
     });
@@ -181,7 +144,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         message: "Failed to fetch Products",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: process.env.NODE_ENV === "development" ? error : null,
       },
       { status: 500 }
     );
