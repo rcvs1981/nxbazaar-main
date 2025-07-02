@@ -1,8 +1,5 @@
-import Heading from "@/components/backoffice/Heading";
-import PageHeader from "@/components/backoffice/PageHeader";
-import TableActions from "@/components/backoffice/TableActions";
 
-import Link from "next/link";
+import PageHeader from "@/components/backoffice/PageHeader";
 import React from "react";
 import { columns } from "./columns";
 import { getData } from "@/lib/getData";
@@ -19,7 +16,7 @@ export default async function page() {
         linkTitle="Add Farmer"
       />
       <div className="py-0">
-        <DataTable data={farmers} columns={columns} filterKeys={["name"]} />
+        <DataTable data={farmers} columns={columns} />
       </div>
     </div>
   );

@@ -1,68 +1,73 @@
-import { UploadDropzone } from "@/lib/uploadthing";
-import { Pencil, XCircle } from "lucide-react";
-import Image from "next/image";
-import React from "react";
-import toast from "react-hot-toast";
+'use client';
 
+import { UploadDropzone } from "@/lib/uploadthing";
+import { XCircle } from "lucide-react";
+import Image from "next/image";
+import toast from "react-hot-toast";
+import React from "react";
+
+
+interface MultipleImageInputProps {
+  label: string;
+  imageUrls: string[];
+  setImageUrlsAction: (urls: string[]) => void;
+  className?: string;
+  endpoint: string;
+}
 export default function MultipleImageInput({
   label,
   imageUrls,
-  setImageUrls,
+  setImageUrlsAction,
   className = "col-span-full",
-  endpoint = "",
-}) {
-  function handleImageRemove(imageIndex) {
-    const updatedImages = imageUrls.filter(
-      (image, index) => index !== imageIndex
-    );
-    setImageUrls(updatedImages);
+  endpoint,
+}: MultipleImageInputProps) {
+  function handleImageRemove(index: number) {
+    const updated = imageUrls.filter((_, i) => i !== index);
+    setImageUrlsAction(updated);
   }
   return (
     <div className={className}>
       <div className="flex justify-between items-center mb-4">
         <label
-          htmlFor="course-image"
+          htmlFor="multiple-image-input"
           className="block text-sm font-medium leading-6 text-gray-900 dark:text-slate-50 mb-2"
         >
           {label}
         </label>
       </div>
+
       {imageUrls.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {imageUrls.map((imageUrl, i) => {
-            return (
-              <div key={i} className="relative mb-6">
-                <button
-                  onClick={() => handleImageRemove(i)}
-                  className="absolute -top-4 -right-2 bg-slate-100 text-slate-900 rounded-full "
-                >
-                  <XCircle className="" />
-                </button>
-                <Image
-                  src={imageUrl}
-                  alt="Item image"
-                  width={1000}
-                  height={667}
-                  className="w-full h-32 object-cover"
-                />
-              </div>
-            );
-          })}
+          {imageUrls.map((url, i) => (
+            <div key={i} className="relative mb-6">
+              <button
+                type="button"
+                onClick={() => handleImageRemove(i)}
+                className="absolute -top-4 -right-2 bg-slate-100 text-slate-900 rounded-full"
+              >
+                <XCircle />
+              </button>
+              <Image
+                src={url}
+                alt={`Image ${i + 1}`}
+                width={1000}
+                height={667}
+                className="w-full h-32 object-cover rounded"
+              />
+            </div>
+          ))}
         </div>
       ) : (
         <UploadDropzone
           endpoint={endpoint}
           onClientUploadComplete={(res) => {
-            console.log(res);
             const urls = res.map((item) => item.url);
             setImageUrls(urls);
-            console.log(urls);
-            console.log("Upload Completed");
+            toast.success("Images uploaded successfully!");
           }}
           onUploadError={(error) => {
             toast.error("Image Upload Failed, Try Again");
-            // Do something with the error.
-            console.log(`ERROR! ${error.message}`, error);
+            console.error("Upload Error:", error);
           }}
         />
       )}

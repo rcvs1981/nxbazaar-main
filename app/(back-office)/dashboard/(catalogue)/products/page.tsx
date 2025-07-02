@@ -1,34 +1,29 @@
+import PageHeader from '@/components/backoffice/PageHeader';
+import TableActions from "@/components/backoffice/TableActions";
 
-import PageHeader from "@/components/backoffice/PageHeader";
+export default async function Page() {
 
-import DataTable from "@/components/data-table-components/DataTable";
-import { getData } from "@/lib/getData";
 
-//import Link from "next/link";
-import React from "react";
-import { columns } from "./columns";
-//import { getServerSession } from "next-auth";
-//import { authOptions } from "@/lib/authOptions";
 
-export default async function page() {
- 
-  const allProducts = await getData("products");
- 
-  
-  
   return (
-    <div>
-      {/* Header */}
-      <PageHeader
+    <div className="container mx-auto px-4 py-8">
+     
+       <PageHeader
         heading="Products"
         href="/dashboard/products/new"
         linkTitle="Add Product"
       />
-      <div className="py-8">
+
+      {/* Table Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        {/* Table Actions (search, filters, etc.) */}
+      <TableActions />
+           
+            
+
        
-          <DataTable data={allProducts} columns={columns} />
         
-          
+       
         
       </div>
     </div>

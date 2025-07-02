@@ -1,83 +1,60 @@
 import toast from "react-hot-toast";
 
-interface ApiRequestOptions<T> {
-  setLoading: (value: boolean) => void;
-  endpoint: string;
-  data: T;
-  resourceName: string;
-  reset?: () => void;
-  redirect?: () => void;
-}
-
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-
-export async function makePostRequest<T>({
-  setLoading,
-  endpoint,
-  data,
-  resourceName,
-  reset,
-  redirect,
-}: ApiRequestOptions<T>): Promise<void> {
+export async function makePostRequest<T>(
+  setLoading: (val: boolean) => void,
+  endpoint: string,
+  data: T,
+  resourceName: string,
+  reset?: () => void,
+  redirect?: () => void
+) {
+  setLoading(true);
   try {
-    setLoading(true);
-    const response = await fetch(`${baseUrl}/${endpoint}`, {
+    const res = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json" },
     });
 
-    const responseData = await response.json();
+   if (!res.ok) {
+  const errorText = await res.text();
+  toast.error(errorText || `Failed to create ${resourceName}`);
+  throw new Error(errorText);
+}
 
-    if (response.ok) {
-      toast.success(`New ${resourceName} created successfully.`);
-      reset?.();
-      redirect?.();
-    } else {
-      if (response.status === 409 && responseData?.message) {
-        toast.error(responseData.message);
-      } else {
-        toast.error("Something went wrong. Please try again.");
-      }
-    }
+    toast.success(`${resourceName} created successfully`);
+    reset?.();
+    redirect?.();
   } catch (error) {
     console.error(error);
-    toast.error("Unexpected error occurred.");
+    toast.error(`Error creating ${resourceName}`);
   } finally {
     setLoading(false);
   }
 }
 
-export async function makePutRequest<T>({
-  setLoading,
-  endpoint,
-  data,
-  resourceName,
-  redirect,
-  reset,
-}: ApiRequestOptions<T>): Promise<void> {
+export async function makePutRequest<T>(
+  setLoading: (val: boolean) => void,
+  endpoint: string,
+  data: T,
+  resourceName: string,
+  redirect?: () => void
+) {
+  setLoading(true);
   try {
-    setLoading(true);
-    const response = await fetch(`${baseUrl}/${endpoint}`, {
+    const res = await fetch(endpoint, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json" },
     });
 
-    if (response.ok) {
-      toast.success(`${resourceName} updated successfully.`);
-      reset?.();
-      redirect?.();
-    } else {
-      toast.error("Something went wrong.");
-    }
+    if (!res.ok) throw new Error(`Failed to update ${resourceName}`);
+
+    toast.success(`${resourceName} updated successfully`);
+    redirect?.();
   } catch (error) {
     console.error(error);
-    toast.error("Unexpected error occurred.");
+    toast.error(`Error updating ${resourceName}`);
   } finally {
     setLoading(false);
   }

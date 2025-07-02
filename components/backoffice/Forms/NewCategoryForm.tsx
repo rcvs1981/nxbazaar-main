@@ -10,76 +10,55 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
-interface CategoryFormData {
-  id?: string;
+type CategoryFormValues = {
   title: string;
   description: string;
-  slug?: string;
-  imageUrl?: string;
   isActive: boolean;
-}
+  imageUrl?: string;
+  slug?: string;
+  id?: string;
+};
 
 interface NewCategoryFormProps {
-  updateData?: Partial<CategoryFormData>;
+  updateData?: Partial<CategoryFormValues>;
 }
 
 export default function NewCategoryForm({ updateData = {} }: NewCategoryFormProps) {
   const initialImageUrl = updateData?.imageUrl ?? "";
   const id = updateData?.id ?? "";
-  const [imageUrl, setImageUrl] = useState<string>(initialImageUrl);
-  const [loading, setLoading] = useState<boolean>(false);
-  const router = useRouter();
-
+  const [imageUrl, setImageUrl] = useState(initialImageUrl);
+  const [loading, setLoading] = useState(false);
   const {
     register,
     reset,
     watch,
     handleSubmit,
     formState: { errors },
-  } = useForm<CategoryFormData>({
+  } = useForm<CategoryFormValues>({
     defaultValues: {
       isActive: true,
       ...updateData,
     },
   });
+
+  const router = useRouter();
  const isActive = watch("isActive");
-  const statusText = isActive ? "Active" : "Draft";
-  const statusColor = isActive ? "text-green-500" : "text-yellow-500";
-  function redirect(): void {
+ console.log("isActive value: ", isActive);
+  function redirect() {
     router.push("/dashboard/categories");
   }
 
-  async function onSubmit(data: CategoryFormData): Promise<void> {
+  async function onSubmit(data: CategoryFormValues) {
     const slug = generateSlug(data.title);
-    const formData: CategoryFormData = {
-      ...data,
-      slug,
-      imageUrl
-    };
+    data.slug = slug;
+    data.imageUrl = imageUrl;
 
-    try {
-      if (id) {
-        formData.id = id;
-        await makePutRequest({
-          setLoading,
-          endpoint: `api/categories/${id}`,
-          data: formData,
-          resourceName: "Category",
-          redirect
-        });
-      } else {
-        await makePostRequest({
-          setLoading,
-          endpoint: "api/categories",
-          data: formData,
-          resourceName: "Category",
-          reset,
-          redirect
-        });
-        setImageUrl("");
-      }
-    } catch (error) {
-      console.error("Form submission error:", error);
+    if (id) {
+      data.id = id;
+      makePutRequest(setLoading, `api/categories/${id}`, data, "Category", redirect);
+    } else {
+      makePostRequest(setLoading, "api/categories", data, "Category", reset, redirect);
+      setImageUrl("");
     }
   }
 
@@ -94,7 +73,6 @@ export default function NewCategoryForm({ updateData = {} }: NewCategoryFormProp
           name="title"
           register={register}
           errors={errors}
-           isRequired
         />
 
         <TextareaInput
@@ -111,26 +89,19 @@ export default function NewCategoryForm({ updateData = {} }: NewCategoryFormProp
           label="Category Image"
         />
 
-      <div className={`${statusColor} mb-4 font-medium`}>
-        Status: {statusText}
-      </div>
-
-      <ToggleInput
-        label="Publish your Category"
-        name="isActive"
-        trueTitle="Active"
-        falseTitle="Draft"
-        register={register}
-      />
-
+        <ToggleInput
+          label="Publish your Category"
+          name="isActive"
+          trueTitle="Active"
+          falseTitle="Draft"
+          register={register}
+        />
       </div>
 
       <SubmitButton
         isLoading={loading}
         buttonTitle={id ? "Update Category" : "Create Category"}
-        loadingButtonTitle={`${
-          id ? "Updating" : "Creating"
-        } Category please wait...`}
+        loadingButtonTitle={`${id ? "Updating" : "Creating"} Category please wait...`}
       />
     </form>
   );

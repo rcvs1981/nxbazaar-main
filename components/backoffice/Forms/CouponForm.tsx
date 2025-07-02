@@ -1,84 +1,59 @@
 "use client";
 
-import SubmitButton from "@/components/FormInputs/SubmitButton";
-
+import { useForm } from "react-hook-form";
 import TextInput from "@/components/FormInputs/TextInput";
 import ToggleInput from "@/components/FormInputs/ToggleInput";
-
+import SubmitButton from "@/components/FormInputs/SubmitButton";
 import { makePostRequest, makePutRequest } from "@/lib/apiRequest";
-import { convertIsoDateToNormal } from "@/lib/convertIsoDatetoNormal";
-import { generateCouponCode } from "@/lib/generateCouponCode";
-import { generateIsoFormattedDate } from "@/lib/generateIsoFormattedDate";
-
 import { useRouter } from "next/navigation";
-import React, { useState} from "react";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
 
-export default function CouponForm({ updateData = {} }) {
-  const [loading, setLoading] = useState(false);
-  const [couponCode, setCouponCode] = useState("");
-  const id = updateData?.id ?? "";
+type CouponFormValues = {
+  id?: string;
+  title: string;
+  couponCode: string;
+  expiryDate: string;
+  isActive: boolean;
+};
 
-  // Initialize form with default values
+function formatDateForInput(date: string | Date) {
+  return new Date(date).toISOString().split("T")[0];
+}
+
+export default function CouponForm({ initialData }: { initialData?: CouponFormValues }) {
   const {
     register,
-    reset,
-    watch,
     handleSubmit,
+    reset,
     formState: { errors },
-  } = useForm({
-    defaultValues: {
-      isActive: true,
-      ...updateData,
-      expiryDate: updateData?.expiryDate 
-        ? convertIsoDateToNormal(updateData.expiryDate) 
-        : "",
-    },
+  } = useForm<CouponFormValues>({
+    defaultValues: initialData
+      ? {
+          ...initialData,
+          expiryDate: formatDateForInput(initialData.expiryDate),
+        }
+      : {
+          title: "",
+          couponCode: "",
+          expiryDate: "",
+          isActive: true,
+        },
   });
 
-  const isActive = watch("isActive");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  function redirect() {
-    router.push("/dashboard/coupons");
-  }
-
-  async function onSubmit(data) {
-    try {
-      const couponCode = generateCouponCode(data.title, data.expiryDate);
-      const isoFormattedDate = generateIsoFormattedDate(data.expiryDate);
-      
-      const payload = {
-        ...data,
-        expiryDate: isoFormattedDate,
-        couponCode: couponCode,
-      };
-
-      console.log("Submitting coupon data:", payload);
-
-      if (id) {
-        await makePutRequest(
-          setLoading,
-          `api/coupons/${id}`,
-          payload,
-          "Coupon",
-          redirect
-        );
-      } else {
-        await makePostRequest(
-          setLoading,
-          "api/coupons",
-          payload,
-          "Coupon",
-          reset,
-          redirect
-        );
-      }
-    } catch (error) {
-      console.error("Error submitting coupon form:", error);
-      setLoading(false);
+  const onSubmit = async (data: CouponFormValues) => {
+    if (initialData?.id) {
+      await makePutRequest(setLoading, `api/coupons/${initialData.id}`, data, "Coupon", () =>
+        router.push("/dashboard/coupons")
+      );
+    } else {
+      await makePostRequest(setLoading, "api/coupons", data, "Coupon", reset, () =>
+        router.push("/dashboard/coupons")
+      );
     }
-  }
+  };
 
   return (
     <form
@@ -92,7 +67,13 @@ export default function CouponForm({ updateData = {} }) {
           register={register}
           errors={errors}
           className="w-full"
-          required
+        />
+        <TextInput
+          label="Coupon Code"
+          name="couponCode"
+          register={register}
+          errors={errors}
+          className="w-full"
         />
         <TextInput
           label="Coupon Expiry Date"
@@ -101,8 +82,6 @@ export default function CouponForm({ updateData = {} }) {
           register={register}
           errors={errors}
           className="w-full"
-          required
-          min={new Date().toISOString().split('T')[0]} // Set min date to today
         />
         <ToggleInput
           label="Publish your Coupon"
@@ -115,9 +94,9 @@ export default function CouponForm({ updateData = {} }) {
 
       <SubmitButton
         isLoading={loading}
-        buttonTitle={id ? "Update Coupon" : "Create Coupon"}
+        buttonTitle={initialData?.id ? "Update Coupon" : "Create Coupon"}
         loadingButtonTitle={`${
-          id ? "Updating" : "Creating"
+          initialData?.id ? "Updating" : "Creating"
         } Coupon please wait...`}
       />
     </form>
