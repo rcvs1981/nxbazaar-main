@@ -1,48 +1,44 @@
-import { NextResponse } from "next/server";
 import {db} from "@/lib/db";
+import { NextResponse } from "next/server";
 
-
-export async function POST(request: Request) {
+export async function POST(request:Request) {
   try {
     const { title, link, imageUrl, isActive } = await request.json();
-
-    
-
     const newBanner = await db.banner.create({
-      data: { title, link, imageUrl, isActive },
+      data: {
+        title,
+        link,
+        imageUrl,
+        isActive,
+      },
     });
-
-    return NextResponse.json(newBanner, { status: 201 });
-  } catch (error: unknown) {
-    console.error("POST /api/banner error:", error);
-
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-
+    console.log(newBanner);
+    return NextResponse.json(newBanner);
+  } catch (error) {
+    console.log(error);
     return NextResponse.json(
-      { message: "Failed to create banner", error: errorMessage },
+      {
+        error: "Failed to create Banner",
+      },
       { status: 500 }
     );
   }
 }
-
-// GET: Fetch all categories
 export async function GET() {
   try {
     const banners = await db.banner.findMany({
-      orderBy: { createdAt: "desc" },
-      
+      orderBy: {
+        createdAt: "desc",
+      },
     });
-
     return NextResponse.json(banners);
-  } catch (error: unknown) {
-    console.error("GET /api/banner error:", error);
-
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-
+  } catch (error) {
+    console.log(error);
     return NextResponse.json(
-      { message: "Failed to fetch banner", error: errorMessage },
+      {
+        message: "Failed to Fetch Banner",
+        error,
+      },
       { status: 500 }
     );
   }

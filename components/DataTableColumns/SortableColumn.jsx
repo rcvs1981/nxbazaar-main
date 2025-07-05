@@ -1,19 +1,7 @@
-"use client";
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
-import { Column } from "@tanstack/react-table";
-
-interface SortableColumnProps<TData> {
-  column: Column<TData, unknown>;
-  title: string;
-}
-
-export default function SortableColumn<TData>({
-  column,
-  title,
-}: SortableColumnProps<TData>) {
+export default function SortableColumn({ column, title }) {
   return (
     <Button
       variant="ghost"

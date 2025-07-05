@@ -1,104 +1,84 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import TextInput from "@/components/FormInputs/TextInput";
-import ToggleInput from "@/components/FormInputs/ToggleInput";
-import SubmitButton from "@/components/FormInputs/SubmitButton";
-import { makePostRequest, makePutRequest } from "@/lib/apiRequest";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import toast from "react-hot-toast";
 
-type CouponFormValues = {
-  id?: string;
-  title: string;
-  couponCode: string;
-  expiryDate: string;
-  isActive: boolean;
-};
-
-function formatDateForInput(date: string | Date) {
-  return new Date(date).toISOString().split("T")[0];
-}
-
-export default function CouponForm({ initialData }: { initialData?: CouponFormValues }) {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<CouponFormValues>({
-    defaultValues: initialData
-      ? {
-          ...initialData,
-          expiryDate: formatDateForInput(initialData.expiryDate),
-        }
-      : {
-          title: "",
-          couponCode: "",
-          expiryDate: "",
-          isActive: true,
-        },
+export default function CouponForm() {
+  const [formData, setFormData] = useState({
+    title: "",
+    couponCode: "",
+    expiryDate: "",
+    isActive: true,
   });
 
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
-  const onSubmit = async (data: CouponFormValues) => {
-    if (initialData?.id) {
-      await makePutRequest(setLoading, `api/coupons/${initialData.id}`, data, "Coupon", () =>
-        router.push("/dashboard/coupons")
-      );
-    } else {
-      await makePostRequest(setLoading, "api/coupons", data, "Coupon", reset, () =>
-        router.push("/dashboard/coupons")
-      );
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/coupons", {
+        method: "POST",
+        body: JSON.stringify(formData),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) throw new Error("Failed to create coupon");
+
+      toast.success("Coupon created successfully!");
+      setFormData({ title: "", couponCode: "", expiryDate: "", isActive: true });
+    } catch (err) {
+      toast.error("Error creating coupon");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="w-full max-w-4xl p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 mx-auto my-3"
-    >
-      <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
-        <TextInput
-          label="Coupon Title"
-          name="title"
-          register={register}
-          errors={errors}
-          className="w-full"
-        />
-        <TextInput
-          label="Coupon Code"
-          name="couponCode"
-          register={register}
-          errors={errors}
-          className="w-full"
-        />
-        <TextInput
-          label="Coupon Expiry Date"
-          name="expiryDate"
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+      <div>
+        <Label htmlFor="title">Title</Label>
+        <Input name="title" value={formData.title} onChange={handleChange} required />
+      </div>
+
+      <div>
+        <Label htmlFor="couponCode">Coupon Code</Label>
+        <Input name="couponCode" value={formData.couponCode} onChange={handleChange} required />
+      </div>
+
+      <div>
+        <Label htmlFor="expiryDate">Expiry Date</Label>
+        <Input
           type="date"
-          register={register}
-          errors={errors}
-          className="w-full"
-        />
-        <ToggleInput
-          label="Publish your Coupon"
-          name="isActive"
-          trueTitle="Active"
-          falseTitle="Draft"
-          register={register}
+          name="expiryDate"
+          value={formData.expiryDate}
+          onChange={handleChange}
+          required
         />
       </div>
 
-      <SubmitButton
-        isLoading={loading}
-        buttonTitle={initialData?.id ? "Update Coupon" : "Create Coupon"}
-        loadingButtonTitle={`${
-          initialData?.id ? "Updating" : "Creating"
-        } Coupon please wait...`}
-      />
+      <div className="flex items-center gap-2">
+        <Label htmlFor="isActive">Active</Label>
+        <Switch
+          id="isActive"
+          checked={formData.isActive}
+          onCheckedChange={(val) => setFormData({ ...formData, isActive: val })}
+        />
+      </div>
+
+      <Button type="submit" disabled={loading}>
+        {loading ? "Creating..." : "Create Coupon"}
+      </Button>
     </form>
   );
 }

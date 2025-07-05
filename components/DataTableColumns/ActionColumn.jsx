@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,24 +11,8 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import DeleteBtn from "../Actions/DeleteBtn";
 import EditBtn from "../Actions/EditBtn";
-import { Row } from "@tanstack/react-table";
-import { ProductType } from "../../types";
-
-type ActionColumnProps = {
-  row: Row<ProductType>;
-  title: string;
-  endpoint: string;      // base endpoint like 'products'
-  editEndpoint: string;  // base edit path like 'products/update'
-};
-
-export default function ActionColumn({
-  row,
-  title,
-  endpoint,
-  editEndpoint,
-}: ActionColumnProps) {
-  const product = row.original;
-
+export default function ActionColumn({ row, title, endpoint, editEndpoint }) {
+  const isActive = row.isActive;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -42,11 +24,11 @@ export default function ActionColumn({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <DeleteBtn title={`${title} (${product.title})`} endpoint={`${endpoint}/${product.id}`} />
+        <DropdownMenuItem>
+          <DeleteBtn title={title} endpoint={endpoint} />
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <EditBtn title={title} editEndpoint={`${editEndpoint}/${product.id}`} />
+        <DropdownMenuItem>
+          <EditBtn title={title} editEndpoint={editEndpoint} />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

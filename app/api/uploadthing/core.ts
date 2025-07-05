@@ -12,7 +12,11 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ file }) => {
       console.log("banner uploaded", file);
     }),
-  
+
+   farmerProfileUploader: f({ image: { maxFileSize: "4MB" } })
+    .onUploadComplete(async ({ file }) => {
+      console.log("file uploaded", file);
+    }),
   // more routes...
 } satisfies FileRouter;
 

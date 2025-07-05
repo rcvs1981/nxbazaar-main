@@ -1,11 +1,15 @@
-export function generateSlug(title:any) {
-  const slug = title
-    .toLowerCase() // Convert the title to lowercase
-    .replace(/\s+/g, "-") // Replace spaces with dashes
-    .replace(/[^\w\-]+/g, "") // Remove non-word characters except dashes
-    .replace(/\-\-+/g, "-") // Replace multiple consecutive dashes with a single dash
-    .replace(/^\-+/, "") // Remove dashes from the beginning
-    .replace(/\-+$/, ""); // Remove dashes from the end
 
-  return slug;
+
+export function generateSlug(title: string = ""): string {
+  if (typeof title !== "string") return "";
+
+  return title
+    .toLowerCase()                      // Lowercase the title
+    .trim()                             // Remove leading/trailing spaces
+    .replace(/\s+/g, "-")               // Replace spaces with hyphens
+    .replace(/[^\w\-]+/g, "")           // Remove all non-word characters except hyphens
+    .replace(/\-\-+/g, "-")             // Replace multiple hyphens with a single one
+    .replace(/^-+/, "")                 // Trim hyphens from start
+    .replace(/-+$/, "");                // Trim hyphens from end
+     
 }
