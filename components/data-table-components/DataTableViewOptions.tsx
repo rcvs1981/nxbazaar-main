@@ -2,10 +2,9 @@
 
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
-import { Table } from "@tanstack/react-table";
+import type { Table } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
-
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -14,7 +13,14 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-export function DataTableViewOptions({ table }) {
+// ✅ Define props with proper generic typing
+interface DataTableViewOptionsProps<TData> {
+  table: Table<TData>;
+}
+
+export function DataTableViewOptions<TData>({
+  table,
+}: DataTableViewOptionsProps<TData>) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -36,18 +42,16 @@ export function DataTableViewOptions({ table }) {
             (column) =>
               typeof column.accessorFn !== "undefined" && column.getCanHide()
           )
-          .map((column) => {
-            return (
-              <DropdownMenuCheckboxItem
-                key={column.id}
-                className="capitalize"
-                checked={column.getIsVisible()}
-                onCheckedChange={(value) => column.toggleVisibility(!!value)}
-              >
-                {column.id}
-              </DropdownMenuCheckboxItem>
-            );
-          })}
+          .map((column) => (
+            <DropdownMenuCheckboxItem
+              key={column.id}
+              className="capitalize"
+              checked={column.getIsVisible()}
+              onCheckedChange={(value) => column.toggleVisibility(!!value)}
+            >
+              {column.id}
+            </DropdownMenuCheckboxItem>
+          ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -1,19 +1,19 @@
-{/** 
-export default async function getData(endpoint: string) {
+
+export async function getData(endpoint: string) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    // console.log(`${baseUrl}/api/${endpoint}`);
     const response = await fetch(`${baseUrl}/api/${endpoint}`, {
       cache: "no-store",
     });
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
-    console.log(error);
+    console.error("Fetch error:", error);
+    return null;
   }
 }
 
- 
+
+ {/** 
 export async function getData(endpoint: string) {
   try {
     const response = await fetch('/api/categories', {
@@ -36,19 +36,4 @@ export async function getData(endpoint: string) {
   }
 }
  */}
-export async function getData(endpoint: string) {
-  try {
-    const response = await fetch(`/api/${endpoint}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
 
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Fetch error:', error);
-    return [];
-  }
-}

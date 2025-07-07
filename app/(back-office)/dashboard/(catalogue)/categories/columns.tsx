@@ -2,20 +2,11 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import DateColumn from "@/components/DataTableColumns/DateColumn";
-import ImageColumn from "@/components/DataTableColumns/ImageColumn";
+import { Category } from "@/types/category"; // अपनी Category type path के अनुसार import करें
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
+import ImageColumn from "@/components/DataTableColumns/ImageColumn";
+import DateColumn from "@/components/DataTableColumns/DateColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-
-// Define your data type
-type Category = {
-  id: string;
-  title: string;
-  imageUrl: string;
-  isActive: boolean;
-  createdAt: Date | string;
-  description?: string;
-};
 
 export const columns: ColumnDef<Category>[] = [
   {
@@ -52,29 +43,30 @@ export const columns: ColumnDef<Category>[] = [
   {
     accessorKey: "isActive",
     header: "Active",
-    cell: ({ row }) => (
-      <span className={row.getValue("isActive") ? "text-green-500" : "text-red-500"}>
-        {row.getValue("isActive") ? "Yes" : "No"}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const isActive = row.getValue("isActive") as boolean;
+      return <div>{isActive ? "Yes" : "No"}</div>;
+    },
   },
   {
     accessorKey: "createdAt",
     header: "Date Created",
-    cell: ({ row }) => <DateColumn row={row} accessorKey="createdAt" />,
+    cell: ({ row }) => (
+      <DateColumn row={row} accessorKey="createdAt" />
+    ),
   },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const category = row.original;
-      return (
-        <ActionColumn
-          row={row}
-          title="Category"
-          editEndpoint={`categories/update/${category.id}`}
-          endpoint={`categories/${category.id}`}
-        />
-      );
-    },
+ {
+  id: "actions",
+  cell: ({ row }) => {
+    const category = row.original;
+    return (
+      <ActionColumn<Category>
+        row={row}
+        title="Category"
+        editEndpoint={`categories/update/${category.id}`}
+        endpoint={`categories/${category.id}`}
+      />
+    );
+  },
   },
 ];

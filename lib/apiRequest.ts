@@ -1,81 +1,84 @@
+// lib/apiRequest.ts
 import toast from "react-hot-toast";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+interface ApiRequestOptions<T> {
+  setLoading: (value: boolean) => void;
+  endpoint: string;
+  data: T;
+  resourceName: string;
+  reset?: () => void;
+  redirect?: () => void;
+}
 
-// POST Request with no-store cache
-export async function makePostRequest<T>(
-  setLoading: (value: boolean) => void,
-  endpoint: string,
-  data: T,
-  resourceName: string,
-  reset?: () => void,
-  redirect?: () => void
-): Promise<void> {
+export async function makePostRequest<T>({
+  setLoading,
+  endpoint,
+  data,
+  resourceName,
+  reset,
+  redirect,
+}: ApiRequestOptions<T>): Promise<void> {
   try {
     setLoading(true);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-    const response = await fetch(`${baseUrl}/${endpoint}`, {
+    const res = await fetch(`${baseUrl}/${endpoint}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
 
-    const responseData = await response.json();
+    const responseData = await res.json();
 
-    if (response.ok) {
-      toast.success(`New ${resourceName} created successfully`);
+    if (res.ok) {
+      toast.success(`New ${resourceName} created successfully.`);
       reset?.();
       redirect?.();
     } else {
-      if (response.status === 409) {
-        toast.error(responseData.message || "Conflict occurred");
+      if (res.status === 409) {
+        toast.error(responseData?.message || "Conflict Error");
       } else {
-        toast.error("Something went wrong, please try again");
+        toast.error("Something went wrong. Please try again.");
       }
     }
   } catch (error) {
-    console.error("POST error:", error);
-    toast.error("Unexpected error occurred");
+    console.error("POST Error:", error);
+    toast.error("An unexpected error occurred.");
   } finally {
     setLoading(false);
   }
 }
 
-// PUT Request with no-store cache
-export async function makePutRequest<T>(
-  setLoading: (value: boolean) => void,
-  endpoint: string,
-  data: T,
-  resourceName: string,
-  reset?: () => void,
-  redirect?: () => void
-): Promise<void> {
+export async function makePutRequest<T>({
+  setLoading,
+  endpoint,
+  data,
+  resourceName,
+  reset,
+  redirect,
+}: ApiRequestOptions<T>): Promise<void> {
   try {
     setLoading(true);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-    const response = await fetch(`${baseUrl}/${endpoint}`, {
+    const res = await fetch(`${baseUrl}/${endpoint}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
 
-    if (response.ok) {
-      toast.success(`${resourceName} updated successfully`);
+    const responseData = await res.json();
+
+    if (res.ok) {
+      toast.success(`${resourceName} updated successfully.`);
       reset?.();
       redirect?.();
     } else {
-      const responseData = await response.json();
-      toast.error(responseData?.message || "Something went wrong");
+      toast.error(responseData?.message || "Something went wrong.");
     }
   } catch (error) {
-    console.error("PUT error:", error);
-    toast.error("Unexpected error occurred");
+    console.error("PUT Error:", error);
+    toast.error("An unexpected error occurred.");
   } finally {
     setLoading(false);
   }

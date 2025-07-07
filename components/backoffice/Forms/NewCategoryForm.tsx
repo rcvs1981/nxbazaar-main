@@ -1,34 +1,34 @@
 "use client";
 import ImageInput from "@/components/FormInputs/ImageInput";
+
 import SubmitButton from "@/components/FormInputs/SubmitButton";
 import TextareaInput from "@/components/FormInputs/TextAreaInput";
 import TextInput from "@/components/FormInputs/TextInput";
 import ToggleInput from "@/components/FormInputs/ToggleInput";
+
 import { makePostRequest, makePutRequest } from "@/lib/apiRequest";
 import { generateSlug } from "@/lib/generateSlug";
 import { useRouter } from "next/navigation";
+
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
-type CategoryFormValues = {
+interface CategoryFormValues {
   title: string;
-  description: string;
+  description?: string;
   isActive: boolean;
   imageUrl?: string;
   slug?: string;
   id?: string;
-};
-
-interface NewCategoryFormProps {
-  updateData?: Partial<CategoryFormValues>;
 }
 
-export default function NewCategoryForm({ updateData = {} }: NewCategoryFormProps) {
+export default function NewCategoryForm({ updateData = {} }: { updateData?: Partial<CategoryFormValues> }) {
   const initialImageUrl = updateData?.imageUrl ?? "";
   const id = updateData?.id ?? "";
-  const [imageUrl, setImageUrl] = useState(initialImageUrl);
+  const [imageUrl, setImageUrl] = useState<string>(initialImageUrl);
+  // const markets = [];
   const [loading, setLoading] = useState(false);
-  const {
+ const {
     register,
     reset,
     watch,
@@ -40,32 +40,47 @@ export default function NewCategoryForm({ updateData = {} }: NewCategoryFormProp
       ...updateData,
     },
   });
-
+  const isActive = watch("isActive");
   const router = useRouter();
- const isActive = watch("isActive");
- console.log("isActive value: ", isActive);
-  function redirect() {
-    router.push("/dashboard/categories");
-  }
+  
+   async function onSubmit(data: CategoryFormValues) {
+  const slug = generateSlug(data.title);
+  data.slug = slug;
+  data.imageUrl = imageUrl;
 
-  async function onSubmit(data: CategoryFormValues) {
-    const slug = generateSlug(data.title);
-    data.slug = slug;
-    data.imageUrl = imageUrl;
+  if (id) {
+  data.id = id;
 
-    if (id) {
-      data.id = id;
-      makePutRequest(setLoading, `api/categories/${id}`, data, "Category", redirect);
-    } else {
-      makePostRequest(setLoading, "api/categories", data, "Category", reset, redirect);
-      setImageUrl("");
-    }
-  }
+  await makePutRequest<CategoryFormValues>({
+    setLoading,
+    endpoint: `api/categories/${id}`,
+    data,
+    resourceName: "Category",
+    reset: () => reset(),
+    redirect: () => router.push("/dashboard/categories"),
+  });
+
+  console.log("Update Request: ", data);
+} else {
+ await makePostRequest<CategoryFormValues>({
+    setLoading,
+    endpoint: "api/categories",
+    data,
+    resourceName: "Category",
+    reset: () => reset(),
+    redirect: () => router.push("/dashboard/categories"),
+  });
+
+  console.log("Update Request: ", data);
+}
+  setImageUrl("");
+}
+
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="w-full max-w-4xl p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 mx-auto my-3"
+      className="w-full max-w-4xl p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 mx-auto my-3 "
     >
       <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
         <TextInput
@@ -81,14 +96,12 @@ export default function NewCategoryForm({ updateData = {} }: NewCategoryFormProp
           register={register}
           errors={errors}
         />
-
         <ImageInput
           imageUrl={imageUrl}
           setImageUrl={setImageUrl}
           endpoint="categoryImageUploader"
           label="Category Image"
         />
-
         <ToggleInput
           label="Publish your Category"
           name="isActive"
@@ -96,12 +109,19 @@ export default function NewCategoryForm({ updateData = {} }: NewCategoryFormProp
           falseTitle="Draft"
           register={register}
         />
+        {isActive ? (
+  <p className="text-green-500">This category is active</p>
+) : (
+  <p className="text-red-500">This category is inactive</p>
+)}
       </div>
 
       <SubmitButton
         isLoading={loading}
         buttonTitle={id ? "Update Category" : "Create Category"}
-        loadingButtonTitle={`${id ? "Updating" : "Creating"} Category please wait...`}
+        loadingButtonTitle={`${
+          id ? "Updating" : "Creating"
+        } Category please wait...`}
       />
     </form>
   );

@@ -1,18 +1,28 @@
 "use client";
 
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { Table } from "@tanstack/react-table";
+import type { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 
-export function DataTableToolbar({ table, filterKeys }) {
-  //IF any of the keys have a value
-  const isFiltered = filterKeys.some(
-    (key) => table.getState().columnFilters[key]?.length > 0
-  );
+// ✅ Props interface with generics
+interface DataTableToolbarProps<TData> {
+  table: Table<TData>;
+  filterKeys: string[];
+}
 
-  const handleInputChange = (key, value) => {
+export function DataTableToolbar<TData>({
+  table,
+  filterKeys,
+}: DataTableToolbarProps<TData>) {
+  // ✅ Check if any column has a filter value
+  const isFiltered = filterKeys.some((key) => {
+    const val = table.getColumn(key)?.getFilterValue();
+    return val !== undefined && val !== null && val !== "";
+  });
+
+  const handleInputChange = (key: string, value: string) => {
     table.getColumn(key)?.setFilterValue(value);
   };
 
@@ -29,7 +39,7 @@ export function DataTableToolbar({ table, filterKeys }) {
           <Input
             key={key}
             placeholder={`Filter ${key}...`}
-            value={table.getColumn(key)?.getFilterValue() ?? ""}
+            value={(table.getColumn(key)?.getFilterValue() as string) ?? ""}
             onChange={(event) => handleInputChange(key, event.target.value)}
             className="h-8 w-[150px] lg:w-[250px]"
           />
