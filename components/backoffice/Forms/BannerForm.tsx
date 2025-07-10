@@ -1,26 +1,18 @@
 "use client";
 import ImageInput from "@/components/FormInputs/ImageInput";
 import SubmitButton from "@/components/FormInputs/SubmitButton";
+import TextareaInput from "@/components/FormInputs/TextAreaInput";
 import TextInput from "@/components/FormInputs/TextInput";
 import ToggleInput from "@/components/FormInputs/ToggleInput";
+import FormHeader from "@/components/backoffice/FormHeader";
 import { makePostRequest, makePutRequest } from "@/lib/apiRequest";
+import { generateSlug } from "@/lib/generateSlug";
 import { useRouter } from "next/navigation";
+
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
-type BannerFormValues = {
-  id?: string;
-  title: string;
-  link: string;
-  imageUrl: string;
-  isActive: boolean;
-};
-
-type BannerFormProps = {
-  updateData?: Partial<BannerFormValues>;
-};
-
-export default function BannerForm({ updateData = {} }: BannerFormProps) {
+export default function BannerForm({ updateData = {} }) {
   const initialImageUrl = updateData?.imageUrl ?? "";
   const id = updateData?.id ?? "";
   const [imageUrl, setImageUrl] = useState(initialImageUrl);
@@ -31,7 +23,7 @@ export default function BannerForm({ updateData = {} }: BannerFormProps) {
     watch,
     handleSubmit,
     formState: { errors },
-  } = useForm<BannerFormValues>({
+  } = useForm({
     defaultValues: {
       isActive: true,
       ...updateData,
@@ -41,10 +33,8 @@ export default function BannerForm({ updateData = {} }: BannerFormProps) {
   function redirect() {
     router.push("/dashboard/banners");
   }
- const isActive = watch("isActive");
-console.log("Banner status:", isActive ? "Published" : "Draft");
-
- async function onSubmit(data: BannerFormValues) {
+  const isActive = watch("isActive");
+  async function onSubmit(data) {
     data.imageUrl = imageUrl;
     console.log(data);
     if (id) {
@@ -96,9 +86,6 @@ console.log("Banner status:", isActive ? "Published" : "Draft");
           falseTitle="Draft"
           register={register}
         />
-        {watch("isActive") && (
-  <p className="text-green-500">This banner will be published</p>
-)}
       </div>
 
       <SubmitButton

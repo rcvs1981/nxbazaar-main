@@ -1,23 +1,12 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import DateColumn from "@/components/DataTableColumns/DateColumn";
-import ImageColumn from "@/components/DataTableColumns/ImageColumn";
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
+import ImageColumn from "@/components/DataTableColumns/ImageColumn";
+import DateColumn from "@/components/DataTableColumns/DateColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-
-// Define your data type
-type Category = {
-  id: string;
-  title: string;
-  imageUrl: string;
-  isActive: boolean;
-  createdAt: Date | string;
-  description?: string;
-};
-
-export const columns: ColumnDef<Category>[] = [
+export const columns = [
   {
     id: "select",
     header: ({ table }) => (
@@ -45,18 +34,17 @@ export const columns: ColumnDef<Category>[] = [
     header: ({ column }) => <SortableColumn column={column} title="Title" />,
   },
   {
-    accessorKey: "imageUrl",
-    header: "Category Image",
-    cell: ({ row }) => <ImageColumn row={row} accessorKey="imageUrl" />,
+    accessorKey: "couponCode",
+    header: "Coupon Code",
+  },
+  {
+    accessorKey: "expiryDate",
+    header: "Expiry Date",
+    cell: ({ row }) => <DateColumn row={row} accessorKey="expiryDate" />,
   },
   {
     accessorKey: "isActive",
-    header: "Active",
-    cell: ({ row }) => (
-      <span className={row.getValue("isActive") ? "text-green-500" : "text-red-500"}>
-        {row.getValue("isActive") ? "Yes" : "No"}
-      </span>
-    ),
+    header: "IsActive",
   },
   {
     accessorKey: "createdAt",
@@ -66,13 +54,13 @@ export const columns: ColumnDef<Category>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const category = row.original;
+      const coupon = row.original;
       return (
         <ActionColumn
           row={row}
-          title="Category"
-          editEndpoint={`categories/update/${category.id}`}
-          endpoint={`categories/${category.id}`}
+          title="Coupon"
+          editEndpoint={`coupons/update/${coupon.id}`}
+          endpoint={`coupons/${coupon.id}`}
         />
       );
     },

@@ -1,29 +1,31 @@
-import PageHeader from '@/components/backoffice/PageHeader';
-import TableActions from "@/components/backoffice/TableActions";
+
+import PageHeader from "@/components/backoffice/PageHeader";
+
+import {DataTable} from "@/components/data-table-components/DataTable";
+import { getData } from "@/lib/getData";
+
+
+import React from "react";
+import { columns } from "./columns";
 
 export default async function Coupons() {
-
-
-
+  
+ 
+  const allCoupons = await getData("coupons");
+  
   return (
-    <div className="container mx-auto px-4 py-8">
-      
-       <PageHeader
+    <div>
+      {/* Header */}
+      <PageHeader
         heading="Coupons"
         href="/dashboard/coupons/new"
         linkTitle="Add Coupon"
       />
-
-      {/* Table Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        {/* Table Actions (search, filters, etc.) */}
-      <TableActions />
-           
-            
-
-       
+      <div className="py-8">
         
+          <DataTable data={allCoupons} columns={columns} />
        
+          
         
       </div>
     </div>

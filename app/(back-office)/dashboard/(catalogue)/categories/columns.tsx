@@ -2,11 +2,12 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Category } from "@/types/category"; // अपनी Category type path के अनुसार import करें
+import { Category } from "@/types/category"; 
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import ImageColumn from "@/components/DataTableColumns/ImageColumn";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
+
 
 export const columns: ColumnDef<Category>[] = [
   {
@@ -60,12 +61,12 @@ export const columns: ColumnDef<Category>[] = [
   cell: ({ row }) => {
     const category = row.original;
     return (
-      <ActionColumn<Category>
-        row={row}
-        title="Category"
-        editEndpoint={`categories/update/${category.id}`}
-        endpoint={`categories/${category.id}`}
-      />
+     <ActionColumn
+  row={row}
+  title="Category"
+  editEndpoint={`categories/update/${category?.id}`}
+  endpoint={`categories/${category?.id}`}
+/>
     );
   },
   },

@@ -7,19 +7,21 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
-     
-      
+      where: {
+        role: "USER",
+      },
+      include: {
+        profile: true,
+      },
     });
     return NextResponse.json(customers);
-  
-  } catch (error: unknown) {
-    console.error("GET /api/customers error:", error);
-
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-
+  } catch (error) {
+    console.log(error);
     return NextResponse.json(
-      { message: "Failed to fetch customers", error: errorMessage },
+      {
+        message: "Failed to Fetch Users",
+        error,
+      },
       { status: 500 }
     );
   }

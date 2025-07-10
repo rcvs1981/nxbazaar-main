@@ -1,7 +1,7 @@
-import db from "@/lib/db";
+import {db} from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function POST(request) {
+export async function POST(request:Request) {
   try {
     const { checkoutFormData, orderItems } = await request.json();
     const {
@@ -104,7 +104,7 @@ export async function POST(request) {
   }
 }
 
-export async function GET(request) {
+export async function GET() {
   try {
     const orders = await db.order.findMany({
       orderBy: {

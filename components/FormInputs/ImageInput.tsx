@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { UploadDropzone } from "@/lib/uploadthing";
 import { Pencil } from "lucide-react";
@@ -6,37 +6,38 @@ import Image from "next/image";
 import React from "react";
 import toast from "react-hot-toast";
 
-import type { OurFileRouter } from "@/app/api/uploadthing/core";
+type UploadthingEndpoint =
+  | "categoryImageUploader"
+  | "bannerImageUploader"
+  | "farmerProfileUploader";
 
 interface ImageInputProps {
   label: string;
   imageUrl?: string;
-  setImageUrl: (url: string) => void;
+  setImageUrlAction: (url: string) => void;
   className?: string;
-  endpoint: keyof OurFileRouter; // ✅ TYPE FIXED HERE
+  endpoint: UploadthingEndpoint;
 }
 
-const ImageInput: React.FC<ImageInputProps> = ({
+export default function ImageInput({
   label,
   imageUrl = "",
-  setImageUrl,
+  setImageUrlAction,
   className = "col-span-full",
   endpoint,
-}) => {
+}: ImageInputProps) {
   return (
     <div className={className}>
-      <div className="flex justify-between items-center mb-4">
-        <label
-          htmlFor="upload-image"
-          className="block text-sm font-medium leading-6 text-gray-900 dark:text-slate-50 mb-2"
-        >
+      {/* label + change button */}
+      <div className="flex justify-between items-center mb-2">
+        <label className="block text-sm font-medium leading-6 text-gray-900 dark:text-slate-50">
           {label}
         </label>
         {imageUrl && (
           <button
-            onClick={() => setImageUrl("")}
+            onClick={() => setImageUrlAction("")}
             type="button"
-            className="flex items-center space-x-2 bg-slate-900 rounded-md shadow text-white py-2 px-4"
+            className="flex items-center space-x-2 bg-slate-900 text-white px-4 py-2 rounded-md"
           >
             <Pencil className="w-5 h-5" />
             <span>Change Image</span>
@@ -44,10 +45,11 @@ const ImageInput: React.FC<ImageInputProps> = ({
         )}
       </div>
 
+      {/* image preview or upload */}
       {imageUrl ? (
         <Image
           src={imageUrl}
-          alt="Uploaded"
+          alt="Uploaded image"
           width={1000}
           height={667}
           className="w-full h-64 object-contain"
@@ -56,21 +58,15 @@ const ImageInput: React.FC<ImageInputProps> = ({
         <UploadDropzone
           endpoint={endpoint}
           onClientUploadComplete={(res) => {
-            const uploadedUrl = res?.[0]?.url;
-            if (uploadedUrl) {
-              setImageUrl(uploadedUrl);
-              toast.success("Image uploaded successfully!");
-              console.log("Upload Complete: ", res);
-            }
+            setImageUrlAction(res[0].url);
+            toast.success("Image uploaded");
           }}
           onUploadError={(error) => {
-            toast.error("Image Upload Failed, Try Again");
+            toast.error("Upload failed");
             console.error("Upload Error:", error);
           }}
         />
       )}
     </div>
   );
-};
-
-export default ImageInput;
+}

@@ -1,60 +1,103 @@
-import { NextResponse } from "next/server";
 import {db} from "@/lib/db";
+import { NextResponse } from "next/server";
 
-
-export async function POST(request: Request) {
+export async function POST(request:Request) {
   try {
-    const { title, slug, imageUrl, description, isActive } = await request.json();
-
-    const existingCategory = await db.category.findUnique({
-      where: { slug },
+    /*
+    code,
+      contactPerson,
+      contactPersonPhone,
+      email,
+      name,
+      notes,
+      phone,
+      physicalAddress,
+      terms,
+      isActive,
+      profileImageUrl,
+      products,
+      landSize,
+      mainCrop,
+      userId */
+    // Update the Verification in the user
+    const farmerData = await request.json();
+    //Check if the user Already exists in the db
+    const existingUser = await db.user.findUnique({
+      where: {
+        id: farmerData.userId,
+      },
     });
-
-    if (existingCategory) {
+    if (!existingUser) {
       return NextResponse.json(
         {
           data: null,
-          message: `Category (${title}) already exists in the Database`,
+          message: `No User Found`,
         },
-        { status: 409 }
+        { status: 404 }
       );
     }
-
-    const newCategory = await db.category.create({
-      data: { title, slug, imageUrl, description, isActive },
+    //Update emailVerified
+    const updatedUser = await db.user.update({
+      where: {
+        id: farmerData.userId,
+      },
+      data: {
+        emailVerified: true,
+      },
     });
-
-    return NextResponse.json(newCategory, { status: 201 });
-  } catch (error: unknown) {
-    console.error("POST /api/categories error:", error);
-
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-
+    const newFarmerProfile = await db.farmerProfile.create({
+      data: {
+        code: farmerData.code,
+        contactPerson: farmerData.contactPerson,
+        contactPersonPhone: farmerData.contactPersonPhone,
+        profileImageUrl: farmerData.profileImageUrl,
+        email: farmerData.email,
+        name: farmerData.name,
+        notes: farmerData.notes,
+        phone: farmerData.phone,
+        physicalAddress: farmerData.physicalAddress,
+        terms: farmerData.terms,
+        isActive: farmerData.isActive,
+        products: farmerData.products,
+        landSize: parseFloat(farmerData.landSize),
+        mainCrop: farmerData.mainCrop,
+        userId: farmerData.userId,
+      },
+    });
+    console.log(newFarmerProfile);
+    return NextResponse.json(newFarmerProfile);
+  } catch (error) {
+    console.log(error);
     return NextResponse.json(
-      { message: "Failed to create category", error: errorMessage },
+      {
+        message: "Failed to create Farmer",
+        error,
+      },
       { status: 500 }
     );
   }
 }
-
-// GET: Fetch all categories
 export async function GET() {
   try {
-    const categories = await db.category.findMany({
-      orderBy: { createdAt: "desc" },
-      include: { products: true },
+    const farmers = await db.user.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      where: {
+        role: "FARMER",
+      },
+      include: {
+        farmerProfile: true,
+      },
     });
-
-    return NextResponse.json(categories);
-  } catch (error: unknown) {
-    console.error("GET /api/categories error:", error);
-
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-
+    return NextResponse.json(farmers);
+  } catch (error) {
+    console.log(error);
     return NextResponse.json(
-      { message: "Failed to fetch categories", error: errorMessage },
+      {
+        message: "Failed to Fetch FARMERs",
+        error,
+      },
       { status: 500 }
     );
   }

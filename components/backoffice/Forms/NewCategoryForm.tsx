@@ -96,12 +96,12 @@ export default function NewCategoryForm({ updateData = {} }: { updateData?: Part
           register={register}
           errors={errors}
         />
-        <ImageInput
-          imageUrl={imageUrl}
-          setImageUrl={setImageUrl}
-          endpoint="categoryImageUploader"
-          label="Category Image"
-        />
+     <ImageInput
+        label="Category Image"
+        imageUrl={imageUrl}
+        setImageUrlAction={setImageUrl}
+        endpoint="categoryImageUploader"
+      />
         <ToggleInput
           label="Publish your Category"
           name="isActive"

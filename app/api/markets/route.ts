@@ -1,7 +1,7 @@
-import db from "@/lib/db";
+import {db} from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function POST(request) {
+export async function POST(request:Request) {
   try {
     const { title, slug, logoUrl, description, isActive, categoryIds } =
       await request.json();
@@ -35,7 +35,7 @@ export async function POST(request) {
     );
   }
 }
-export async function GET(request) {
+export async function GET() {
   try {
     const markets = await db.market.findMany({
       orderBy: {

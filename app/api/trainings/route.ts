@@ -1,29 +1,71 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import {db} from "@/lib/db";
+import { NextResponse } from "next/server";
 
-// Define the type for your category data
-interface CategoryData {
-  title: string;
-  slug: string;
-  imageUrl: string;
-  description: string;
-}
-
-export async function POST(request: NextRequest) {
+export async function POST(request:Request) {
   try {
-    const { title, slug, imageUrl, description }: CategoryData = await request.json();
-    const newCategory: CategoryData = { title, slug, imageUrl, description };
-    
-    // Note: Console.log should be before the return statement
-    console.log(newCategory);
-    
-    return NextResponse.json(newCategory);
+    const {
+      title,
+      slug,
+      categoryId,
+      imageUrl,
+      description,
+      isActive,
+      content,
+    } = await request.json();
+    //Check if this training already exists
+    const existingTraining = await db.training.findUnique({
+      where: {
+        slug,
+      },
+    });
+    if (existingTraining) {
+      return NextResponse.json(
+        {
+          data: null,
+          message: `Training ( ${title})  already exists in the Database`,
+        },
+        { status: 409 }
+      );
+    }
+    const newTraining = await db.training.create({
+      data: {
+        title,
+        slug,
+        categoryId,
+        imageUrl,
+        description,
+        isActive,
+        content,
+      },
+    });
+    console.log(newTraining);
+    return NextResponse.json(newTraining);
   } catch (error) {
-    console.error('Error creating category:', error);
+    console.log(error);
     return NextResponse.json(
       {
-        message: "Failed to create Category",
-        error: error instanceof Error ? error.message : 'Unknown error',
+        message: "Failed to create Training",
+        error,
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    const trainings = await db.training.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return NextResponse.json(trainings);
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json(
+      {
+        message: "Failed to Fetch Trainings",
+        error,
       },
       { status: 500 }
     );

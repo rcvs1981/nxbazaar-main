@@ -1,7 +1,7 @@
-import db from "@/lib/db";
+import {db} from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function GET(request) {
+export async function GET(request:Request) {
   const sortBy = request.nextUrl.searchParams.get("sort");
   const min = request.nextUrl.searchParams.get("min");
   const max = request.nextUrl.searchParams.get("max");

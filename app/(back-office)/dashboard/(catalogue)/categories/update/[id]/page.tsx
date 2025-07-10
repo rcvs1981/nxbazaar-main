@@ -1,25 +1,31 @@
-
+import React from "react";
+import { notFound } from "next/navigation";
 import FormHeader from "@/components/backoffice/FormHeader";
 import NewCategoryForm from "@/components/backoffice/Forms/NewCategoryForm";
-import  {getData}  from "@/lib/getData";
-import { notFound } from "next/navigation";
-import React from "react";
+import { getData } from "@/lib/getData";
+import type { Category } from "@/types/category";
 
-interface UpdateCategoryProps {
-  params: {
-    id: string;
-  };
+export const dynamic = "force-dynamic"; // ensures SSR on every load
+
+interface PageProps {
+  params: { id: string };
 }
 
-export default async function UpdateCategory({ params: { id } }: UpdateCategoryProps) {
-  const category = await getData(`categories/${id}`);
+export default async function UpdateCategory({ params }: PageProps) {
+  if (!params?.id || typeof params.id !== "string") return notFound();
 
-  if (!category) return notFound(); // Fallback if category not found
+  try {
+    const category = await getData<Category>(`categories/${params.id}`);
+    if (!category) return notFound();
 
-  return (
-    <div className="space-y-4">
-      <FormHeader title="Update Category" />
-      <NewCategoryForm updateData={category} />
-    </div>
-  );
+    return (
+      <div>
+        <FormHeader title="Update category" />
+        <NewCategoryForm updateData={category} />
+      </div>
+    );
+  } catch (error) {
+    console.error("UpdateCategory error:", error);
+    return notFound();
+  }
 }

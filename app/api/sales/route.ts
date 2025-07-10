@@ -1,7 +1,7 @@
-import db from "@/lib/db";
+import {db} from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function GET(request) {
+export async function GET() {
   try {
     const sales = await db.sale.findMany({
       orderBy: {

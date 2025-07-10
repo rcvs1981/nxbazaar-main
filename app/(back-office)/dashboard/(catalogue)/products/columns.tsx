@@ -1,23 +1,14 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+import Image from "next/image";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
 import ImageColumn from "@/components/DataTableColumns/ImageColumn";
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-
-// Define your data type
-type Category = {
-  id: string;
-  title: string;
-  imageUrl: string;
-  isActive: boolean;
-  createdAt: Date | string;
-  description?: string;
-};
-
-export const columns: ColumnDef<Category>[] = [
+export const columns = [
   {
     id: "select",
     header: ({ table }) => (
@@ -46,18 +37,14 @@ export const columns: ColumnDef<Category>[] = [
   },
   {
     accessorKey: "imageUrl",
-    header: "Category Image",
+    header: "Product Image",
     cell: ({ row }) => <ImageColumn row={row} accessorKey="imageUrl" />,
   },
   {
     accessorKey: "isActive",
     header: "Active",
-    cell: ({ row }) => (
-      <span className={row.getValue("isActive") ? "text-green-500" : "text-red-500"}>
-        {row.getValue("isActive") ? "Yes" : "No"}
-      </span>
-    ),
   },
+
   {
     accessorKey: "createdAt",
     header: "Date Created",
@@ -66,13 +53,13 @@ export const columns: ColumnDef<Category>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const category = row.original;
+      const product = row.original;
       return (
         <ActionColumn
           row={row}
-          title="Category"
-          editEndpoint={`categories/update/${category.id}`}
-          endpoint={`categories/${category.id}`}
+          title="Product"
+          editEndpoint={`products/update/${product.id}`}
+          endpoint={`products/${product.id}`}
         />
       );
     },
