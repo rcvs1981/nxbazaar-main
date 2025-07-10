@@ -1,3 +1,4 @@
+{/** 
 import React from "react";
 import { notFound } from "next/navigation";
 import FormHeader from "@/components/backoffice/FormHeader";
@@ -28,4 +29,27 @@ export default async function UpdateCategory({ params }: PageProps) {
     console.error("UpdateCategory error:", error);
     return notFound();
   }
+}
+  */}
+import { getData } from "@/lib/getData";
+import FormHeader from "@/components/backoffice/FormHeader";
+import NewCategoryForm from "@/components/backoffice/Forms/NewCategoryForm";
+import { Category } from "@/types/category"; // आपकी टाइप जहां पर भी defined हो
+
+type UpdateCategoryPageProps = {
+  params: {
+    id: string;
+  };
+};
+
+export default async function UpdateCategory({ params }: UpdateCategoryPageProps) {
+  
+  const category = await getData<Partial<Category>>(`categories/${params.id}`);
+
+  return (
+    <div className="p-4">
+      <FormHeader title="Update category" />
+      <NewCategoryForm updateData={category} />
+    </div>
+  );
 }
