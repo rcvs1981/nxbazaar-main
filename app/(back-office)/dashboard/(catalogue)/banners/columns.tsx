@@ -1,22 +1,16 @@
 "use client";
 
-import Image from "next/image";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
+import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Banner } from "@/types/Banner"; 
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import ImageColumn from "@/components/DataTableColumns/ImageColumn";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-export const columns = [
+
+
+export const columns: ColumnDef<Banner>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -45,34 +39,36 @@ export const columns = [
   },
   {
     accessorKey: "imageUrl",
-    header: "Banner Image",
+    header: "Category Image",
     cell: ({ row }) => <ImageColumn row={row} accessorKey="imageUrl" />,
   },
   {
-    accessorKey: "link",
-    header: "Banner Link",
-  },
-  {
     accessorKey: "isActive",
-    header: "IsActive",
+    header: "Active",
+    cell: ({ row }) => {
+      const isActive = row.getValue("isActive") as boolean;
+      return <div>{isActive ? "Yes" : "No"}</div>;
+    },
   },
   {
     accessorKey: "createdAt",
     header: "Date Created",
-    cell: ({ row }) => <DateColumn row={row} accessorKey="createdAt" />,
+    cell: ({ row }) => (
+      <DateColumn row={row} accessorKey="createdAt" />
+    ),
   },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const banner = row.original;
-      return (
-        <ActionColumn
-          row={row}
-          title="Banner"
-          editEndpoint={`banners/update/${banner.id}`}
+ {
+  id: "actions",
+  cell: ({ row }) => {
+    const banner = row.original;
+    return (
+     <ActionColumn
+  row={row}
+  title="Banner"
+     editEndpoint={`banners/update/${banner.id}`}
           endpoint={`banners/${banner.id}`}
-        />
-      );
-    },
+/>
+    );
+  },
   },
 ];

@@ -9,8 +9,8 @@ import toast from "react-hot-toast";
 type UploadthingEndpoint =
   | "categoryImageUploader"
   | "bannerImageUploader"
-  | "farmerProfileUploader";
-
+  | "farmerProfileUploader"
+ | "marketLogoUploader";
 interface ImageInputProps {
   label: string;
   imageUrl?: string;
@@ -20,15 +20,14 @@ interface ImageInputProps {
 }
 
 export default function ImageInput({
-  label,
-  imageUrl = "",
+  imageUrl,
   setImageUrlAction,
-  className = "col-span-full",
   endpoint,
+  label,
+  className,
 }: ImageInputProps) {
   return (
     <div className={className}>
-      {/* label + change button */}
       <div className="flex justify-between items-center mb-2">
         <label className="block text-sm font-medium leading-6 text-gray-900 dark:text-slate-50">
           {label}
@@ -45,7 +44,6 @@ export default function ImageInput({
         )}
       </div>
 
-      {/* image preview or upload */}
       {imageUrl ? (
         <Image
           src={imageUrl}

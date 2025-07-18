@@ -12,8 +12,7 @@ export async function getData<T>(endpoint: string): Promise<T> {
     throw new Error("Failed to fetch data");
   }
 }
-*/}
-// lib/getData.ts
+
 
 export async function getData<T>(endpoint: string): Promise<T> {
   try {
@@ -37,11 +36,19 @@ export async function getData<T>(endpoint: string): Promise<T> {
     }
 
     const data = await res.json();
-    return data as T;
+   return data as T;
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Unknown fetch error";
     console.error("[getData error]:", message);
     throw new Error(message);
   }
+}
+*/}
+ 
+export async function getData<T>(endpoint: string): Promise<T[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  const res = await fetch(`${baseUrl}/api/${endpoint}`);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
 }

@@ -17,7 +17,12 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ file }) => {
       console.log("file uploaded", file);
     }),
-  // more routes...
+   
+      marketLogoUploader: f({ image: { maxFileSize: "4MB" } })
+    .onUploadComplete(async ({ file }) => {
+      console.log("file uploaded", file);
+    }),
+
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

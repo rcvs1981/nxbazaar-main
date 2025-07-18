@@ -1,57 +1,78 @@
 "use client";
 import ImageInput from "@/components/FormInputs/ImageInput";
+
 import SubmitButton from "@/components/FormInputs/SubmitButton";
-import TextareaInput from "@/components/FormInputs/TextAreaInput";
+
 import TextInput from "@/components/FormInputs/TextInput";
 import ToggleInput from "@/components/FormInputs/ToggleInput";
-import FormHeader from "@/components/backoffice/FormHeader";
+
 import { makePostRequest, makePutRequest } from "@/lib/apiRequest";
-import { generateSlug } from "@/lib/generateSlug";
+
 import { useRouter } from "next/navigation";
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
-export default function BannerForm({ updateData = {} }) {
+
+interface BannerFormValues {
+  title: string;
+  description?: string;
+  isActive: boolean;
+  imageUrl?: string;
+  slug?: string;
+  id?: string;
+}
+
+
+export default function BannerForm({ updateData = {} }: { updateData?: Partial<BannerFormValues> }) {
   const initialImageUrl = updateData?.imageUrl ?? "";
   const id = updateData?.id ?? "";
   const [imageUrl, setImageUrl] = useState(initialImageUrl);
   const [loading, setLoading] = useState(false);
-  const {
+ const {
     register,
     reset,
     watch,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<BannerFormValues>({
     defaultValues: {
       isActive: true,
       ...updateData,
     },
   });
   const router = useRouter();
-  function redirect() {
-    router.push("/dashboard/banners");
-  }
+ 
   const isActive = watch("isActive");
-  async function onSubmit(data) {
+ async function onSubmit(data: BannerFormValues) {
     data.imageUrl = imageUrl;
     console.log(data);
-    if (id) {
-      //Make Put Request
-      makePutRequest(setLoading, `api/banners/${id}`, data, "Banner", redirect);
-    } else {
-      //make post request
-      makePostRequest(
-        setLoading,
-        "api/banners",
-        data,
-        "Banner",
-        reset,
-        redirect
-      );
+   if (id) {
+  data.id = id;
+      await makePutRequest<BannerFormValues>({
+    setLoading,
+    endpoint: `api/banners/${id}`,
+    data,
+    resourceName: "Banner",
+    reset: () => reset(),
+    redirect: () => router.push("/dashboard/banners"),
+  });
+
+  console.log("Update Request: ", data);
+} else {
+ await makePostRequest<BannerFormValues>({
+    setLoading,
+    endpoint: "api/banners",
+    data,
+    resourceName: "Banner",
+    reset: () => reset(),
+    redirect: () => router.push("/dashboard/banners"),
+  });
+
+  console.log("Update Request: ", data);
+}
       setImageUrl("");
-    }
+    
   }
   return (
     <form
@@ -74,11 +95,11 @@ export default function BannerForm({ updateData = {} }) {
         />
         {/* Configure this endpoint in the core js */}
         <ImageInput
-          imageUrl={imageUrl}
-          setImageUrl={setImageUrl}
-          endpoint="bannerImageUploader"
-          label="Banner Image"
-        />
+        label="Banner Image"
+        imageUrl={imageUrl}
+        setImageUrlAction={setImageUrl}
+        endpoint="bannerImageUploader"
+      />
         <ToggleInput
           label="Publish your Banner"
           name="isActive"
@@ -86,6 +107,11 @@ export default function BannerForm({ updateData = {} }) {
           falseTitle="Draft"
           register={register}
         />
+    {isActive ? (
+  <p className="text-green-500">This banner is active</p>
+) : (
+  <p className="text-red-500">This banner is inactive</p>
+)}
       </div>
 
       <SubmitButton

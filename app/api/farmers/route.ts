@@ -1,102 +1,52 @@
-import {db} from "@/lib/db";
+// app/api/categories/route.ts
+
+import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function POST(request:Request) {
+export async function POST(request: Request) {
   try {
-    /*
-    code,
-      contactPerson,
-      contactPersonPhone,
-      email,
-      name,
-      notes,
-      phone,
-      physicalAddress,
-      terms,
-      isActive,
-      profileImageUrl,
-      products,
-      landSize,
-      mainCrop,
-      userId */
-    // Update the Verification in the user
-    const farmerData = await request.json();
-    //Check if the user Already exists in the db
-    const existingUser = await db.user.findUnique({
-      where: {
-        id: farmerData.userId,
-      },
-    });
-    if (!existingUser) {
-      return NextResponse.json(
-        {
-          data: null,
-          message: `No User Found`,
-        },
-        { status: 404 }
-      );
-    }
-    //Update emailVerified
-    const updatedUser = await db.user.update({
-      where: {
-        id: farmerData.userId,
-      },
+   
+   const { title, link, imageUrl, isActive } = await request.json();
+
+   
+     const newBanner = await db.banner.create({
       data: {
-        emailVerified: true,
+        title,
+        link,
+        imageUrl,
+        isActive,
       },
     });
-    const newFarmerProfile = await db.farmerProfile.create({
-      data: {
-        code: farmerData.code,
-        contactPerson: farmerData.contactPerson,
-        contactPersonPhone: farmerData.contactPersonPhone,
-        profileImageUrl: farmerData.profileImageUrl,
-        email: farmerData.email,
-        name: farmerData.name,
-        notes: farmerData.notes,
-        phone: farmerData.phone,
-        physicalAddress: farmerData.physicalAddress,
-        terms: farmerData.terms,
-        isActive: farmerData.isActive,
-        products: farmerData.products,
-        landSize: parseFloat(farmerData.landSize),
-        mainCrop: farmerData.mainCrop,
-        userId: farmerData.userId,
-      },
-    });
-    console.log(newFarmerProfile);
-    return NextResponse.json(newFarmerProfile);
+
+    return NextResponse.json(newBanner, { status: 201 });
   } catch (error) {
-    console.log(error);
+    console.error("POST /api/banner error:", error);
     return NextResponse.json(
       {
-        message: "Failed to create Farmer",
-        error,
+        message: "Failed to create Banner",
+        error: (error as Error).message,
       },
       { status: 500 }
     );
   }
 }
+
 export async function GET() {
   try {
-    const farmers = await db.user.findMany({
+   
+     const banners = await db.banner.findMany({
       orderBy: {
         createdAt: "desc",
       },
-      where: {
-        role: "FARMER",
-      },
-      include: {
-        farmerProfile: true,
-      },
     });
-    return NextResponse.json(farmers);
+
+    return NextResponse.json( banners );
   } catch (error) {
-    console.log(error);
+    console.error("GET /api/ banners  error:", error);
     return NextResponse.json(
       {
-        message: "Failed to Fetch FARMERs",
-        error,
+        message: "Failed to fetch  banners ",
+        error: (error as Error).message,
       },
       { status: 500 }
     );

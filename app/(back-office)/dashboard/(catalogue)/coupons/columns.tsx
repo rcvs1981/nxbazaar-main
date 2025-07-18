@@ -1,12 +1,11 @@
 "use client";
-
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
-import ImageColumn from "@/components/DataTableColumns/ImageColumn";
+import type { Coupon } from "@/types/Coupon";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-export const columns = [
+import type { ColumnDef } from "@tanstack/react-table";
+export const columns: ColumnDef<Coupon>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -37,32 +36,38 @@ export const columns = [
     accessorKey: "couponCode",
     header: "Coupon Code",
   },
-  {
-    accessorKey: "expiryDate",
-    header: "Expiry Date",
-    cell: ({ row }) => <DateColumn row={row} accessorKey="expiryDate" />,
-  },
+{
+  accessorKey: "expiryDate",
+  header: "Expiry Date",
+  cell: ({ row }) => <DateColumn row={row} accessorKey="expiryDate" />,
+},
   {
     accessorKey: "isActive",
-    header: "IsActive",
+    header: "Active",
+    cell: ({ row }) => {
+      const isActive = row.getValue("isActive") as boolean;
+      return <div>{isActive ? "Yes" : "No"}</div>;
+    },
   },
   {
     accessorKey: "createdAt",
     header: "Date Created",
-    cell: ({ row }) => <DateColumn row={row} accessorKey="createdAt" />,
+    cell: ({ row }) => (
+      <DateColumn row={row} accessorKey="createdAt" />
+    ),
   },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const coupon = row.original;
-      return (
-        <ActionColumn
-          row={row}
-          title="Coupon"
+ {
+  id: "actions",
+  cell: ({ row }) => {
+   const coupon = row.original;
+    return (
+     <ActionColumn
+  row={row}
+    title="Coupon"
           editEndpoint={`coupons/update/${coupon.id}`}
           endpoint={`coupons/${coupon.id}`}
-        />
-      );
-    },
+/>
+    );
+  },
   },
 ];

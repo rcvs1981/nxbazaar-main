@@ -1,55 +1,63 @@
+import { NextRequest, NextResponse } from "next/server";
 import {db} from "@/lib/db";
-import { NextResponse } from "next/server";
 
-export async function POST(request:Request) {
+// ✅ Create Market
+export async function POST(request: NextRequest) {
   try {
     const { title, slug, logoUrl, description, isActive, categoryIds } =
       await request.json();
-    const existingMarket = await db.market.findUnique({
-      where: {
-        slug,
-      },
-    });
-    if (existingMarket) {
+
+    const existing = await db.market.findUnique({ where: { slug } });
+    if (existing) {
       return NextResponse.json(
-        {
-          data: null,
-          message: `Market ( ${title})  already exists in the Database`,
-        },
+        { message: `Market (${title}) already exists.` },
         { status: 409 }
       );
     }
-    const newMarket = await db.market.create({
-      data: { title, slug, logoUrl, description, isActive, categoryIds },
-    });
-    console.log(newMarket);
-    return NextResponse.json(newMarket);
-  } catch (error) {
-    console.log(error);
-    return NextResponse.json(
-      {
-        message: "Failed to create Market",
-        error,
+
+    const connectCategories = categoryIds.map((id: string) => ({ id }));
+
+    const market = await db.market.create({
+      data: {
+        title,
+        slug,
+        logoUrl,
+        description,
+        isActive,
+        categories: {
+          connect: connectCategories,
+        },
       },
+      include: {
+        categories: true,
+      },
+    });
+
+    return NextResponse.json(market);
+  } catch (error) {
+    console.error("POST /markets error:", error);
+    return NextResponse.json(
+      { message: "Failed to create market", error: (error as Error).message },
       { status: 500 }
     );
   }
 }
+
+// ✅ Get all markets
 export async function GET() {
   try {
     const markets = await db.market.findMany({
-      orderBy: {
-        createdAt: "desc",
+      include: {
+        categories: true,
       },
+      orderBy: { createdAt: "desc" },
     });
+
     return NextResponse.json(markets);
   } catch (error) {
-    console.log(error);
+    console.error("GET /markets error:", error);
     return NextResponse.json(
-      {
-        message: "Failed to Fetch Markets",
-        error,
-      },
+      { message: "Failed to fetch markets", error: (error as Error).message },
       { status: 500 }
     );
   }

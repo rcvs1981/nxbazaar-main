@@ -1,4 +1,4 @@
-// components/DataTableColumns/ImageColumn.tsx
+
 
 "use client";
 

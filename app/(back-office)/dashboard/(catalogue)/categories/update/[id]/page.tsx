@@ -34,7 +34,7 @@ export default async function UpdateCategory({ params }: PageProps) {
 import { getData } from "@/lib/getData";
 import FormHeader from "@/components/backoffice/FormHeader";
 import NewCategoryForm from "@/components/backoffice/Forms/NewCategoryForm";
-import { Category } from "@/types/category"; // आपकी टाइप जहां पर भी defined हो
+import { Category } from "@/types/category"; 
 
 type UpdateCategoryPageProps = {
   params: {

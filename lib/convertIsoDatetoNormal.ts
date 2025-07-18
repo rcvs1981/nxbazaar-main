@@ -1,13 +1,17 @@
+export function convertIsoDateToNormal(isoDate: string | undefined | null): string {
+  if (!isoDate || typeof isoDate !== "string") {
+    return "—"; // या कोई default fallback string
+  }
 
-export function convertIsoDateToNormal(isoDate: string): string {
   const dateObject = new Date(isoDate);
+
   if (isNaN(dateObject.getTime())) {
-    throw new Error("Invalid ISO date string");
+    return "—"; // या fallback
   }
 
   const year = dateObject.getFullYear();
   const month = String(dateObject.getMonth() + 1).padStart(2, "0");
   const day = String(dateObject.getDate()).padStart(2, "0");
 
-  return `${year}-${month}-${day}`;
+  return `${day}/${month}/${year}`;
 }

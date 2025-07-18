@@ -10,7 +10,6 @@ datasource db {
 
 
 
-
 // title, couponCode, expiryDate
 model Coupon {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -18,6 +17,9 @@ model Coupon {
   couponCode String
   expiryDate DateTime
   isActive   Boolean
+  user   User   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendorId String @db.ObjectId
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -32,7 +34,11 @@ model Banner {
   updatedAt DateTime @updatedAt
 }
 
+// Relationships
 
+// 1 to 1 Relationship User => Profile Relation
+// 1 to Many => Category => Product Relation
+// many to many => Market => Category
 
 model Category {
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
@@ -41,6 +47,12 @@ model Category {
   imageUrl    String?
   description String?
   isActive    Boolean
+  products    Product[]
+  trainings   Training[]
+
+  marketIds String[] @db.ObjectId
+  markets   Market[] @relation(fields: [marketIds], references: [id])
+
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 }
@@ -53,7 +65,9 @@ model Market {
   description String?
   isActive    Boolean
 
- 
+  categoryIds String[]   @db.ObjectId
+  categories  Category[] @relation(fields: [categoryIds], references: [id])
+
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 }
@@ -78,8 +92,14 @@ model Product {
   productStock   Int?
   qty            Int?
   tags           String[]
- 
-  
+  categoryId     String   @db.ObjectId
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @db.ObjectId
+
+  orderItems OrderItem[]
+  sales      Sale[]
   createdAt  DateTime    @default(now())
   updatedAt  DateTime?   @updatedAt
 }
@@ -93,14 +113,26 @@ model Training {
   content     String?
   isActive    Boolean
 
- 
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String    @db.ObjectId
   createdAt  DateTime  @default(now())
   updatedAt  DateTime? @updatedAt
 }
 
+enum UserRole {
+  ADMIN
+  USER
+  FARMER
+  MODERATOR
+}
 
-
-
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
 
 model User {
   id                String         @id @default(auto()) @map("_id") @db.ObjectId
@@ -108,20 +140,25 @@ model User {
   email             String?        @unique
   password          String
   emailVerified     Boolean        @default(false)
- 
- 
-  
+  products          Product[]
+  coupons          Coupon[]
+  role              UserRole       @default(USER)
+  plan             String?        
+  verificationToken String?
   status            Boolean        @default(false)
- 
+  farmerProfile     FarmerProfile?
+  profile           UserProfile? // Link to user profile
+  orders            Order[] //User can have multiple Orders
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
-  
+  sales              Sale[]
 }
 
 // Model for normal user profile
 model UserProfile {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  
+  userId      String    @unique @db.ObjectId
+   // Personal Details
   name     String?
   firstName     String?
   lastName      String?
@@ -136,7 +173,7 @@ model UserProfile {
   dateOfBirth DateTime?
   profileImage String?
 
- 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model FarmerProfile {
@@ -156,7 +193,8 @@ model FarmerProfile {
   landSize           Float?
   mainCrop           String?
 
- 
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique @db.ObjectId
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
@@ -182,12 +220,15 @@ model Order {
   //Payment Method
   paymentMethod String
 
-  
+  // Order Items
+  orderItems OrderItem[]
+
   // Status
- 
+  orderStatus OrderStatus @default(PROCESSING) // Set PROCESSING as the default value
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  sales       Sale[]
 }
 
 model OrderItem {
@@ -201,7 +242,8 @@ model OrderItem {
   price     Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Sale {
@@ -216,5 +258,7 @@ model Sale {
   productQty   Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendor       User     @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
