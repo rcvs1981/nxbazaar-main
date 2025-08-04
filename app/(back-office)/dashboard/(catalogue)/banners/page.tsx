@@ -7,8 +7,8 @@ import { columns } from "./columns";
 import { Banner } from "@/types/Banner"; // ✅ import the interface
 
 export default async function Page() {
-  const banners = await getData<Banner>("banners");
-
+ 
+ const banners: Banner[] = await getData("banners");
   return (
     <div>
       <PageHeader

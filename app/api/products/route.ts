@@ -1,8 +1,12 @@
 import {db} from "@/lib/db";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest  } from "next/server";
+import { Prisma } from "@prisma/client";
 
-export async function POST(request:Request) {
+
+export async function POST(request: Request) {
   try {
+    const body = await request.json();
+
     const {
       barcode,
       categoryId,
@@ -23,22 +27,29 @@ export async function POST(request:Request) {
       productStock,
       qty,
       productImages,
-    } = await request.json();
-    //Check if this product already exists in the db
+    } = body;
+
+    if (!Array.isArray(productImages) || productImages.length === 0) {
+      return NextResponse.json(
+        { message: "At least one product image is required." },
+        { status: 400 }
+      );
+    }
+
     const existingProduct = await db.product.findUnique({
-      where: {
-        slug,
-      },
+      where: { slug },
     });
+
     if (existingProduct) {
       return NextResponse.json(
         {
           data: null,
-          message: `Product ( ${title})  already exists in the Database`,
+          message: `Product (${title}) already exists in the Database`,
         },
         { status: 409 }
       );
     }
+
     const newProduct = await db.product.create({
       data: {
         barcode,
@@ -46,7 +57,7 @@ export async function POST(request:Request) {
         description,
         userId: farmerId,
         productImages,
-        imageUrl: productImages[0],
+        imageUrl: productImages[0], // ✅ safe now
         isActive,
         isWholesale,
         productCode,
@@ -61,18 +72,14 @@ export async function POST(request:Request) {
         wholesaleQty: parseInt(wholesaleQty),
         productStock: parseInt(productStock),
         qty: parseInt(qty),
-        // category: {
-        //   connect: { id: categoryId },
-        // },
-        // user: {
-        //   connect: { id: farmerId },
-        // },
       },
     });
-    console.log(newProduct);
+
+    console.log("✅ New product created:", newProduct);
+
     return NextResponse.json(newProduct);
   } catch (error) {
-    console.log(error);
+    console.error("❌ Product creation failed:", error);
     return NextResponse.json(
       {
         message: "Failed to create Product",
@@ -83,17 +90,22 @@ export async function POST(request:Request) {
   }
 }
 
-export async function GET(request:Request) {
+
+
+
+export async function GET(request: NextRequest) {
   const categoryId = request.nextUrl.searchParams.get("catId");
   const sortBy = request.nextUrl.searchParams.get("sort");
   const min = request.nextUrl.searchParams.get("min");
   const max = request.nextUrl.searchParams.get("max");
-  const page = request.nextUrl.searchParams.get("page") || 1;
+  const page = request.nextUrl.searchParams.get("page") || "1";
   const pageSize = 3;
-  console.log(sortBy, categoryId);
-  let where = {
-    categoryId,
-  };
+
+  const where: Prisma.ProductWhereInput = {};
+
+  if (categoryId) where.categoryId = categoryId;
+
+
   if (min && max) {
     where.salePrice = {
       gte: parseFloat(min),
@@ -108,35 +120,17 @@ export async function GET(request:Request) {
       lte: parseFloat(max),
     };
   }
-  let products;
+
   try {
-    if (categoryId && sortBy) {
-      products = await db.product.findMany({
-        where,
-        skip: (parseInt(page) - 1) * parseInt(pageSize),
-        take: parseInt(pageSize),
-        orderBy: {
-          salePrice: sortBy === "asc" ? "asc" : "desc",
-        },
-      });
-    } else if (categoryId) {
-      products = await db.product.findMany({
-        where,
-        skip: (parseInt(page) - 1) * parseInt(pageSize),
-        take: parseInt(pageSize),
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-    } else {
-      products = await db.product.findMany({
-        skip: (parseInt(page) - 1) * parseInt(pageSize),
-        take: parseInt(pageSize),
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-    }
+    const products = await db.product.findMany({
+      where,
+      skip: (parseInt(page) - 1) * pageSize,
+      take: pageSize,
+      orderBy: sortBy
+        ? { salePrice: sortBy === "asc" ? "asc" : "desc" }
+        : { createdAt: "desc" },
+    });
+
     return NextResponse.json(products);
   } catch (error) {
     console.log(error);

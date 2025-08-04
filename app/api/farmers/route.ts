@@ -1,30 +1,60 @@
-// app/api/categories/route.ts
+import {db} from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
 
-import { db } from "@/lib/db";
-import { NextResponse } from "next/server";
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-   
-   const { title, link, imageUrl, isActive } = await request.json();
+    const farmerData = await request.json();
 
-   
-     const newBanner = await db.banner.create({
-      data: {
-        title,
-        link,
-        imageUrl,
-        isActive,
+    const existingUser = await db.user.findUnique({
+      where: {
+        id: farmerData.userId,
       },
     });
 
-    return NextResponse.json(newBanner, { status: 201 });
+    if (!existingUser) {
+      return NextResponse.json(
+        { data: null, message: `No User Found` },
+        { status: 404 }
+      );
+    }
+
+    await db.user.update({
+      where: { id: farmerData.userId },
+      data: { emailVerified: true },
+    });
+
+    const newFarmerProfile = await db.farmerProfile.create({
+      data: {
+        code: farmerData.code,
+        contactPerson: farmerData.contactPerson,
+        contactPersonPhone: farmerData.contactPersonPhone,
+        profileImageUrl: farmerData.profileImageUrl,
+        email: farmerData.email,
+        name: farmerData.name,
+        notes: farmerData.notes,
+        phone: farmerData.phone,
+        physicalAddress: farmerData.physicalAddress,
+        terms: farmerData.terms,
+        isActive: farmerData.isActive,
+        products: farmerData.products,
+        landSize: isNaN(parseFloat(farmerData.landSize))
+          ? 0
+          : parseFloat(farmerData.landSize),
+        mainCrop: farmerData.mainCrop,
+        userId: farmerData.userId,
+      },
+    });
+
+    return NextResponse.json({
+      data: newFarmerProfile,
+      message: "Farmer Profile Created Successfully",
+    });
   } catch (error) {
-    console.error("POST /api/banner error:", error);
+    console.error("[FARMER_PROFILE_POST_ERROR]", error);
     return NextResponse.json(
       {
-        message: "Failed to create Banner",
-        error: (error as Error).message,
+        message: "Failed to create Farmer",
+        error: error instanceof Error ? error.message : error,
       },
       { status: 500 }
     );
@@ -33,20 +63,19 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-   
-     const banners = await db.banner.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+    const farmers = await db.user.findMany({
+      orderBy: { createdAt: "desc" },
+      where: { role: "FARMER" },
+      include: { farmerProfile: true },
     });
 
-    return NextResponse.json( banners );
+    return NextResponse.json({ data: farmers });
   } catch (error) {
-    console.error("GET /api/ banners  error:", error);
+    console.error("[FARMER_PROFILE_GET_ERROR]", error);
     return NextResponse.json(
       {
-        message: "Failed to fetch  banners ",
-        error: (error as Error).message,
+        message: "Failed to Fetch FARMERs",
+        error: error instanceof Error ? error.message : error,
       },
       { status: 500 }
     );

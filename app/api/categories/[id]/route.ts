@@ -58,7 +58,8 @@ export async function DELETE(
     });
 
     return NextResponse.json(
-      { message: "Category deleted successfully", data: deletedCategory },
+      { message: "Category deleted successfully",
+         data: deletedCategory },
       { status: 200 }
     );
   } catch (error: unknown) {

@@ -1,14 +1,15 @@
 "use client";
 
-import Image from "next/image";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import DateColumn from "@/components/DataTableColumns/DateColumn";
-import ImageColumn from "@/components/DataTableColumns/ImageColumn";
+import { Product } from "@/types/Product"; 
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
+import ImageColumn from "@/components/DataTableColumns/ImageColumn";
+import DateColumn from "@/components/DataTableColumns/DateColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-export const columns = [
+
+
+export const columns: ColumnDef<Product>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -37,24 +38,29 @@ export const columns = [
   },
   {
     accessorKey: "imageUrl",
-    header: "Product Image",
+    header: "Category Image",
     cell: ({ row }) => <ImageColumn row={row} accessorKey="imageUrl" />,
   },
   {
     accessorKey: "isActive",
     header: "Active",
+    cell: ({ row }) => {
+      const isActive = row.getValue("isActive") as boolean;
+      return <div>{isActive ? "Yes" : "No"}</div>;
+    },
   },
-
   {
     accessorKey: "createdAt",
     header: "Date Created",
-    cell: ({ row }) => <DateColumn row={row} accessorKey="createdAt" />,
+    cell: ({ row }) => (
+      <DateColumn row={row} accessorKey="createdAt" />
+    ),
   },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const product = row.original;
-      return (
+ {
+  id: "actions",
+  cell: ({ row }) => {
+    const product = row.original;
+    return (
         <ActionColumn
           row={row}
           title="Product"

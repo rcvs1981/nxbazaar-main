@@ -44,11 +44,40 @@ export async function getData<T>(endpoint: string): Promise<T> {
     throw new Error(message);
   }
 }
-*/}
+
  
 export async function getData<T>(endpoint: string): Promise<T[]> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const res = await fetch(`${baseUrl}/api/${endpoint}`);
   if (!res.ok) throw new Error("Failed to fetch");
   return res.json();
+}
+
+export async function getData(endpoint: string) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    // console.log(`${baseUrl}/api/${endpoint}`);
+    const response = await fetch(`${baseUrl}/api/${endpoint}`, {
+      cache: "no-store",
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+*/}
+export async function getData<T>(endpoint: string): Promise<T | null> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"; 
+    const res = await fetch(`${baseUrl}/api/${endpoint}`, {
+      cache: "no-store", // या 'force-cache' based on your use case
+    });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error(`Error fetching ${endpoint}:`, err);
+    return null;
+  }
 }

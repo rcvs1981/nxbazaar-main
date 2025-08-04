@@ -84,7 +84,7 @@ async function onSubmit(data: FarmerFormData) {
        toast.success("Farmer created successfully!");
      } catch (error) {
      console.error("Farmer creation error:", error);
-     toast.error("Failed to create farmers.");
+     toast.error("Failed to create farmer.");
    
      } finally {
        setImageUrl("");

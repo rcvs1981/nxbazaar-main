@@ -1,85 +1,91 @@
 "use client";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+
 import ImageInput from "@/components/FormInputs/ImageInput";
 import SelectInput from "@/components/FormInputs/SelectInput";
 import SubmitButton from "@/components/FormInputs/SubmitButton";
 import TextareaInput from "@/components/FormInputs/TextAreaInput";
 import TextInput from "@/components/FormInputs/TextInput";
 import ToggleInput from "@/components/FormInputs/ToggleInput";
-import FormHeader from "@/components/backoffice/FormHeader";
+
+
 import { makePostRequest, makePutRequest } from "@/lib/apiRequest";
 import { generateSlug } from "@/lib/generateSlug";
-import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
-const QuillEditor = dynamic(
-  () => import("@/components/FormInputs/QuillEditor"),
-  {
-    ssr: false,
-  }
-);
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { CategoryOption, TrainingFormData } from "@/types/TrainingFormData";
 
-export default function NewTrainingForm({ categories, updateData = {} }) {
+
+// ✅ Props Type
+interface NewTrainingFormProps {
+  categories: CategoryOption[]; // { id: string; title: string }
+  updateData?: Partial<TrainingFormData & { id: string }>;
+}
+
+export default function NewTrainingForm({ categories, updateData = {} }: NewTrainingFormProps) {
+  const router = useRouter();
+
   const initialContent = updateData?.content ?? "";
   const initialImageUrl = updateData?.imageUrl ?? "";
   const id = updateData?.id ?? "";
+
   const [imageUrl, setImageUrl] = useState(initialImageUrl);
+  const [content, setContent] = useState(initialContent);
   const [loading, setLoading] = useState(false);
+
   const {
     register,
     reset,
     watch,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<TrainingFormData>({
     defaultValues: {
       isActive: true,
       ...updateData,
     },
   });
 
-  // Quill Editor
-  const [content, setContent] = useState(initialContent);
-  //Quill EDITOR END
-  const router = useRouter();
-  function redirect() {
-    router.push("/dashboard/community");
-  }
-  const isActive = watch("isActive");
-  async function onSubmit(data) {
-    const slug = generateSlug(data.title);
-    data.slug = slug;
+ 
+ const isActive = watch("isActive");
+  const onSubmit = async (data: TrainingFormData) => {
+    data.slug = generateSlug(data.title);
     data.imageUrl = imageUrl;
     data.content = content;
-    console.log(data);
+
     if (id) {
-      data.id = id;
-      // Make Put Request (Update)
-      makePutRequest(
-        setLoading,
-        `api/trainings/${id}`,
-        data,
-        "Training",
-        redirect
-      );
-      console.log("update Request: ", data);
-    } else {
-      makePostRequest(
-        setLoading,
-        "api/trainings",
-        data,
-        "Training",
-        reset,
-        redirect
-      );
+        await makePutRequest<TrainingFormData & { id: string }>({
+          setLoading,
+          endpoint: `api/trainings/${id}`,
+         data: { ...data, id },
+          resourceName: "Training",
+          reset: () => reset(),
+          redirect: () => router.push("/dashboard/community"),
+        });
+      
+        console.log("Update Request: ", data);
+      } else {
+       await makePostRequest<TrainingFormData>({
+          setLoading,
+          endpoint: `api/trainings`,
+          data,
+          resourceName: "Training",
+          reset: () => reset(),
+          redirect: () => router.push("/dashboard/community"),
+        });
+      
+        console.log("Update Request: ", data);
+      }
       setImageUrl("");
       setContent("");
-    }
-  }
+    
+  };
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="w-full max-w-4xl p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 mx-auto my-3 "
+      className="w-full max-w-4xl p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 mx-auto my-3"
     >
       <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
         <TextInput
@@ -89,33 +95,30 @@ export default function NewTrainingForm({ categories, updateData = {} }) {
           errors={errors}
           className="w-full"
         />
-        <SelectInput
-          label="Select Category"
-          name="categoryId"
-          register={register}
-          errors={errors}
-          className="w-full"
-          options={categories}
-        />
+
+        <SelectInput<TrainingFormData>
+  label="Select Category"
+  name="categoryId"
+  register={register}
+  errors={errors}
+  className="w-full"
+  options={categories}
+/>
+
         <TextareaInput
           label="Training Description"
           name="description"
           register={register}
           errors={errors}
         />
-        <ImageInput
-          imageUrl={imageUrl}
-          setImageUrl={setImageUrl}
-          endpoint="trainingImageUploader"
-          label="Training Thumbnail"
-        />
-        {/* Content */}
-        <QuillEditor
-          label="Training Content"
-          value={content}
-          onChange={setContent}
-        />
-        {/* Content End */}
+
+      <ImageInput
+  label="Training Thumbnail"
+  imageUrl={imageUrl}
+  setImageUrlAction={setImageUrl} // ✅ FIXED: correct prop name
+  endpoint="trainingImageUploader"
+/>
+
         <ToggleInput
           label="Publish your Training"
           name="isActive"
@@ -123,14 +126,13 @@ export default function NewTrainingForm({ categories, updateData = {} }) {
           falseTitle="Draft"
           register={register}
         />
+        {isActive && <p className="text-green-500">This training will be published.</p>}
       </div>
 
       <SubmitButton
         isLoading={loading}
         buttonTitle={id ? "Update Training" : "Create Training"}
-        loadingButtonTitle={`${
-          id ? "Updating" : "Creating"
-        } Training please wait...`}
+        loadingButtonTitle={`${id ? "Updating" : "Creating"} Training please wait...`}
       />
     </form>
   );

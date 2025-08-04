@@ -10,7 +10,9 @@ type UploadthingEndpoint =
   | "categoryImageUploader"
   | "bannerImageUploader"
   | "farmerProfileUploader"
- | "marketLogoUploader";
+  | "marketLogoUploader"
+  | "trainingImageUploader";
+
 interface ImageInputProps {
   label: string;
   imageUrl?: string;

@@ -1,73 +1,35 @@
 import {db} from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function POST(request:Request) {
+export async function POST(req: Request) {
   try {
-    const {
-      title,
-      slug,
-      categoryId,
-      imageUrl,
-      description,
-      isActive,
-      content,
-    } = await request.json();
-    //Check if this training already exists
-    const existingTraining = await db.training.findUnique({
-      where: {
-        slug,
-      },
-    });
-    if (existingTraining) {
-      return NextResponse.json(
-        {
-          data: null,
-          message: `Training ( ${title})  already exists in the Database`,
-        },
-        { status: 409 }
-      );
+    const body = await req.json();
+    const { title, slug, categoryId, imageUrl, description, isActive, content } = body;
+
+    const existing = await db.training.findUnique({ where: { slug } });
+    if (existing) {
+      return NextResponse.json({ message: `Training (${title}) already exists` }, { status: 409 });
     }
-    const newTraining = await db.training.create({
-      data: {
-        title,
-        slug,
-        categoryId,
-        imageUrl,
-        description,
-        isActive,
-        content,
-      },
+
+    const training = await db.training.create({
+      data: { title, slug, categoryId, imageUrl, description, isActive, content },
     });
-    console.log(newTraining);
-    return NextResponse.json(newTraining);
+
+    return NextResponse.json(training);
   } catch (error) {
-    console.log(error);
-    return NextResponse.json(
-      {
-        message: "Failed to create Training",
-        error,
-      },
-      { status: 500 }
-    );
+    console.error("POST error:", error);
+    return NextResponse.json({ message: "Failed to create Training", error }, { status: 500 });
   }
 }
 
 export async function GET() {
   try {
     const trainings = await db.training.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(trainings);
   } catch (error) {
-    console.log(error);
-    return NextResponse.json(
-      {
-        message: "Failed to Fetch Trainings",
-        error,
-      },
-      { status: 500 }
-    );
+    console.error("GET error:", error);
+    return NextResponse.json({ message: "Failed to fetch trainings", error }, { status: 500 });
   }
 }

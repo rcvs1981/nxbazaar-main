@@ -1,35 +1,43 @@
-'use client';
+"use client";
 
 import { UploadDropzone } from "@/lib/uploadthing";
 import { XCircle } from "lucide-react";
 import Image from "next/image";
-import toast from "react-hot-toast";
 import React from "react";
+import toast from "react-hot-toast";
 
+import type { OurFileRouter } from "@/app/api/uploadthing/core"; 
+
+type UploadedFileResponse = {
+  url: string;
+  key: string;
+}[];
 
 interface MultipleImageInputProps {
   label: string;
   imageUrls: string[];
-  setImageUrlsAction: (urls: string[]) => void;
+  setImageUrls: React.Dispatch<React.SetStateAction<string[]>>;
   className?: string;
-  endpoint: string;
+  endpoint: keyof OurFileRouter;
 }
-export default function MultipleImageInput({
+
+const MultipleImageInput: React.FC<MultipleImageInputProps> = ({
   label,
   imageUrls,
-  setImageUrlsAction,
+  setImageUrls,
   className = "col-span-full",
   endpoint,
-}: MultipleImageInputProps) {
-  function handleImageRemove(index: number) {
-    const updated = imageUrls.filter((_, i) => i !== index);
-    setImageUrlsAction(updated);
+}) => {
+  function handleImageRemove(imageIndex: number) {
+    const updatedImages = imageUrls.filter((_, index) => index !== imageIndex);
+    setImageUrls(updatedImages);
   }
+
   return (
     <div className={className}>
       <div className="flex justify-between items-center mb-4">
         <label
-          htmlFor="multiple-image-input"
+          htmlFor="course-image"
           className="block text-sm font-medium leading-6 text-gray-900 dark:text-slate-50 mb-2"
         >
           {label}
@@ -38,7 +46,7 @@ export default function MultipleImageInput({
 
       {imageUrls.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {imageUrls.map((url, i) => (
+          {imageUrls.map((imageUrl, i) => (
             <div key={i} className="relative mb-6">
               <button
                 type="button"
@@ -48,11 +56,11 @@ export default function MultipleImageInput({
                 <XCircle />
               </button>
               <Image
-                src={url}
-                alt={`Image ${i + 1}`}
+                src={imageUrl}
+                alt="Item image"
                 width={1000}
                 height={667}
-                className="w-full h-32 object-cover rounded"
+                className="w-full h-32 object-cover"
               />
             </div>
           ))}
@@ -60,17 +68,19 @@ export default function MultipleImageInput({
       ) : (
         <UploadDropzone
           endpoint={endpoint}
-          onClientUploadComplete={(res) => {
+          onClientUploadComplete={(res: UploadedFileResponse) => {
             const urls = res.map((item) => item.url);
             setImageUrls(urls);
-            toast.success("Images uploaded successfully!");
+            toast.success("Upload completed");
           }}
-          onUploadError={(error) => {
+          onUploadError={(error: Error) => {
             toast.error("Image Upload Failed, Try Again");
-            console.error("Upload Error:", error);
+            console.error("Upload error:", error.message, error);
           }}
         />
       )}
     </div>
   );
-}
+};
+
+export default MultipleImageInput;

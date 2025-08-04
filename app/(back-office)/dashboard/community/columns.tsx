@@ -1,11 +1,16 @@
+// columns.tsx
+
 "use client";
 
+import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
 import ImageColumn from "@/components/DataTableColumns/ImageColumn";
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-export const columns = [
+import { Training } from "@/types/Training";
+
+export const columns: ColumnDef<Training>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -40,8 +45,18 @@ export const columns = [
   {
     accessorKey: "isActive",
     header: "Active",
+    cell: ({ row }) => (
+      <span
+        className={`text-xs font-medium px-2 py-1 rounded-full ${
+          row.getValue("isActive")
+            ? "bg-green-100 text-green-800"
+            : "bg-gray-200 text-gray-600"
+        }`}
+      >
+        {row.getValue("isActive") ? "Active" : "Draft"}
+      </span>
+    ),
   },
-
   {
     accessorKey: "createdAt",
     header: "Date Created",

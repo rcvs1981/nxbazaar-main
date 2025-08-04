@@ -8,7 +8,7 @@ import React from "react";
 import { getData } from "@/lib/getData";
 import { columns } from "./columns";
 export default async function page() {
-  const categories = await getData<Category[]>("categories");
+ const categories: Category[] = await getData("categories");
   return (
     <div>
       {/* Header */}
@@ -19,7 +19,7 @@ export default async function page() {
       />
 
       <div className="py-0">
-       <DataTable columns={columns} data={categories} filterKeys={["title"]} />;
+       <DataTable columns={columns} data={categories}  />;
       </div>
     </div>
   );

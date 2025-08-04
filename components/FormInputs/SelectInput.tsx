@@ -1,64 +1,56 @@
-import React from "react";
+"use client";
+import type { Option } from "@/types/Option";
 import {
-  UseFormRegister,
-  FieldValues,
-  Path,
   FieldErrors,
+  Path,
+  UseFormRegister,
+  FieldError,
 } from "react-hook-form";
 
-interface SelectOption {
-  id: string;
-  title: string;
-}
-
-interface SelectInputProps<T extends FieldValues> {
+interface SelectInputProps<T extends Record<string, unknown>> {
   label: string;
   name: Path<T>;
+  options: Option[];
   register: UseFormRegister<T>;
-  options?: SelectOption[];
-  multiple?: boolean;
-  className?: string;
   errors?: FieldErrors<T>;
+  className?: string; // ✅ className को props में ऐड किया
 }
 
-export default function SelectInput<T extends FieldValues>({
+function SelectInput<T extends Record<string, unknown>>({
   label,
   name,
+  options,
   register,
-  options = [],
-  multiple = false,
-  className = "",
   errors,
+  className, // ✅ destructure किया
 }: SelectInputProps<T>) {
+  const error = errors?.[name] as FieldError | undefined;
+
   return (
-    <div className={className}>
-      <label
-        htmlFor={name}
-        className="block text-sm font-medium leading-6 text-gray-900 dark:text-slate-50 mb-2"
-      >
+    <div className={`w-full ${className ?? ""}`}> {/* ✅ className को यूज़ किया */}
+      <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
         {label}
       </label>
-      <div className="mt-2">
-        <select
-          {...register(name)}
-          id={name}
-          name={name}
-          multiple={multiple}
-          className="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-white dark:border-gray-600"
-        >
-          {options.map((option) => (
-            <option key={option.id} value={option.id}>
-              {option.title}
-            </option>
-          ))}
-        </select>
-      </div>
+      <select
+        {...register(name)}
+        className={`bg-gray-50 border ${
+          error ? "border-red-500" : "border-gray-300"
+        } text-gray-900 text-sm rounded-lg
+          focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5`}
+      >
+        <option value="">Select {label}</option>
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.title}
+          </option>
+        ))}
+      </select>
 
-      {errors?.[name] && (
-        <p className="mt-1 text-sm text-red-600">
-          {(errors[name]?.message as string) ?? "This field is required"}
-        </p>
+      {error && (
+        <p className="text-sm text-red-600 mt-1">{String(error.message)}</p>
       )}
     </div>
   );
 }
+
+export default SelectInput;
