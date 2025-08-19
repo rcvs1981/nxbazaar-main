@@ -1,12 +1,8 @@
-import {db} from "@/lib/db";
-import { NextResponse, NextRequest  } from "next/server";
-import { Prisma } from "@prisma/client";
-
+import { db } from "@/lib/db";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-
     const {
       barcode,
       categoryId,
@@ -27,24 +23,23 @@ export async function POST(request: Request) {
       productStock,
       qty,
       productImages,
-    } = body;
+    } = await request.json();
 
-    if (!Array.isArray(productImages) || productImages.length === 0) {
-      return NextResponse.json(
-        { message: "At least one product image is required." },
-        { status: 400 }
-      );
+    // ✅ पहले validate करें slug है या नहीं
+    if (!slug || typeof slug !== "string" || slug.trim() === "") {
+      return NextResponse.json({ message: "Slug is required" }, { status: 400 });
     }
 
+    // ✅ फिर check करें database में already exist करता है या नहीं
     const existingProduct = await db.product.findUnique({
-      where: { slug },
+     where: { slug: "product-slug-here" }
     });
 
     if (existingProduct) {
       return NextResponse.json(
         {
           data: null,
-          message: `Product (${title}) already exists in the Database`,
+          message: `Product ( ${title}) already exists in the Database`,
         },
         { status: 409 }
       );
@@ -57,7 +52,7 @@ export async function POST(request: Request) {
         description,
         userId: farmerId,
         productImages,
-        imageUrl: productImages[0], // ✅ safe now
+        imageUrl: productImages[0],
         isActive,
         isWholesale,
         productCode,
@@ -75,68 +70,13 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log("✅ New product created:", newProduct);
-
+    console.log(newProduct);
     return NextResponse.json(newProduct);
   } catch (error) {
-    console.error("❌ Product creation failed:", error);
+    console.error("POST /api/products error:", error);
     return NextResponse.json(
       {
         message: "Failed to create Product",
-        error,
-      },
-      { status: 500 }
-    );
-  }
-}
-
-
-
-
-export async function GET(request: NextRequest) {
-  const categoryId = request.nextUrl.searchParams.get("catId");
-  const sortBy = request.nextUrl.searchParams.get("sort");
-  const min = request.nextUrl.searchParams.get("min");
-  const max = request.nextUrl.searchParams.get("max");
-  const page = request.nextUrl.searchParams.get("page") || "1";
-  const pageSize = 3;
-
-  const where: Prisma.ProductWhereInput = {};
-
-  if (categoryId) where.categoryId = categoryId;
-
-
-  if (min && max) {
-    where.salePrice = {
-      gte: parseFloat(min),
-      lte: parseFloat(max),
-    };
-  } else if (min) {
-    where.salePrice = {
-      gte: parseFloat(min),
-    };
-  } else if (max) {
-    where.salePrice = {
-      lte: parseFloat(max),
-    };
-  }
-
-  try {
-    const products = await db.product.findMany({
-      where,
-      skip: (parseInt(page) - 1) * pageSize,
-      take: pageSize,
-      orderBy: sortBy
-        ? { salePrice: sortBy === "asc" ? "asc" : "desc" }
-        : { createdAt: "desc" },
-    });
-
-    return NextResponse.json(products);
-  } catch (error) {
-    console.log(error);
-    return NextResponse.json(
-      {
-        message: "Failed to Fetch Products",
         error,
       },
       { status: 500 }

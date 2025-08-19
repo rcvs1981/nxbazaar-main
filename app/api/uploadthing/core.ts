@@ -5,9 +5,14 @@ const f = createUploadthing();
 export const ourFileRouter = {
     trainingImageUploader: f({ image: { maxFileSize: "4MB" } })
     .onUploadComplete(async ({ file }) => {
-      console.log("training image uploaded", file.url);
+      console.log("training image uploaded", file);
     }),
   categoryImageUploader: f({ image: { maxFileSize: "4MB" } })
+    .onUploadComplete(async ({ file }) => {
+      console.log("file uploaded", file);
+    }),
+
+       subcategoryImageUploader: f({ image: { maxFileSize: "4MB" } })
     .onUploadComplete(async ({ file }) => {
       console.log("file uploaded", file);
     }),

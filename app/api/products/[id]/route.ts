@@ -1,85 +1,44 @@
+// app/api/products/[id]/route.ts
 import { db } from "@/lib/db";
-import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-// ✅ Params Interface
 interface Params {
-  params: {
-    id: string;
-  };
+  id: string;
 }
 
-// ✅ PUT Request Body Interface
-interface ProductUpdateRequest {
-  barcode?: string;
-  categoryId: string;
-  description?: string;
-  farmerId: string;
-  imageUrl?: string;
-  isActive: boolean;
-  isWholesale: boolean;
-  productCode?: string;
-  productPrice: number | string;
-  salePrice: number | string;
-  sku?: string;
-  slug: string;
-  tags?: string[];
-  title: string;
-  unit?: string;
-  wholesalePrice: number | string;
-  wholesaleQty: number | string;
-  productStock: number | string;
-  qty: number | string;
-}
-export async function GET(
-  
-  { params: { id } }: Params
-) {
+export async function GET(_request: NextRequest, { params }: { params: Params }) {
   try {
     const product = await db.product.findUnique({
-      where: { id },
+      where: { id: params.id },
     });
 
     return NextResponse.json(product);
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { message: "Failed to Fetch Product", error },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Failed to fetch product", error }, { status: 500 });
   }
 }
-export async function DELETE(
-  
-  { params: { id } }: Params
-) {
-  try {
-    const existingProduct = await db.product.findUnique({ where: { id } });
 
-    if (!existingProduct) {
-      return NextResponse.json(
-        { data: null, message: "Product Not Found" },
-        { status: 404 }
-      );
+export async function DELETE(_request: NextRequest, { params }: { params: Params }) {
+  try {
+    const product = await db.product.findUnique({ where: { id: params.id } });
+
+    if (!product) {
+      return NextResponse.json({ message: "Product not found" }, { status: 404 });
     }
 
-    const deletedProduct = await db.product.delete({ where: { id } });
+    const deleted = await db.product.delete({ where: { id: params.id } });
 
-    return NextResponse.json(deletedProduct);
+    return NextResponse.json(deleted);
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { message: "Failed to Delete Product", error },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Failed to delete product", error }, { status: 500 });
   }
 }
-export async function PUT(
-  request: NextRequest,
-  { params: { id } }: Params
-) {
+
+export async function PUT(request: NextRequest, { params }: { params: Params }) {
   try {
-    const body = (await request.json()) as ProductUpdateRequest;
+    const body = await request.json();
 
     const {
       barcode,
@@ -103,17 +62,8 @@ export async function PUT(
       qty,
     } = body;
 
-    const existingProduct = await db.product.findUnique({ where: { id } });
-
-    if (!existingProduct) {
-      return NextResponse.json(
-        { data: null, message: "Not Found" },
-        { status: 404 }
-      );
-    }
-
-    const updatedProduct = await db.product.update({
-      where: { id },
+    const updated = await db.product.update({
+      where: { id: params.id },
       data: {
         barcode,
         categoryId,
@@ -123,26 +73,23 @@ export async function PUT(
         isActive,
         isWholesale,
         productCode,
-        productPrice: parseFloat(productPrice as string),
-        salePrice: parseFloat(salePrice as string),
+        productPrice: parseFloat(productPrice),
+        salePrice: parseFloat(salePrice),
         sku,
         slug,
         tags,
         title,
         unit,
-        wholesalePrice: parseFloat(wholesalePrice as string),
-        wholesaleQty: parseInt(wholesaleQty as string),
-        productStock: parseInt(productStock as string),
-        qty: parseInt(qty as string),
+        wholesalePrice: parseFloat(wholesalePrice),
+        wholesaleQty: parseInt(wholesaleQty),
+        productStock: parseInt(productStock),
+        qty: parseInt(qty),
       },
     });
 
-    return NextResponse.json(updatedProduct);
+    return NextResponse.json(updated);
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { message: "Failed to Update Product", error },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Failed to update product", error }, { status: 500 });
   }
 }

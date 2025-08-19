@@ -67,17 +67,25 @@ export async function getData(endpoint: string) {
   }
 }
 */}
-export async function getData<T>(endpoint: string): Promise<T | null> {
+export async function getData<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"; 
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ??
+      (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "");
+
+    if (!baseUrl) throw new Error("Base URL not set");
+
     const res = await fetch(`${baseUrl}/api/${endpoint}`, {
-      cache: "no-store", // या 'force-cache' based on your use case
+      cache: "no-store",
+      ...options,
     });
+
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    const data = await res.json();
-    return data;
+
+    return (await res.json()) as T;
   } catch (err) {
-    console.error(`Error fetching ${endpoint}:`, err);
+    console.error(`Error fetching ${endpoint}:`, err instanceof Error ? err.message : err);
     return null;
   }
 }
+
