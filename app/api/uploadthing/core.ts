@@ -22,7 +22,7 @@ export const ourFileRouter = {
       console.log("banner uploaded", file);
     }),
 
-   farmerProfileUploader: f({ image: { maxFileSize: "4MB" } })
+   farmerProfileUploader: f({ image: { maxFileSize: "2MB" } })
     .onUploadComplete(async ({ file }) => {
       console.log("file uploaded", file);
     }),

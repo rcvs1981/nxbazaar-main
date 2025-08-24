@@ -6,7 +6,7 @@ import { columns } from "./columns";
 import { Product } from "@/types/Product"; // 
 
 export default async function Page() {
- const products:Product[] = await getData("products");
+const products: Product[] = (await getData("products")) ?? [];
 
   return (
     <div>

@@ -57,19 +57,18 @@ model Category {
 }
 
 model SubCategory {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
   title       String
-  slug        String   @unique
+  slug        String     @unique
   imageUrl    String?
   description String?
-  isActive    Boolean
-  categoryId  String   @db.ObjectId
-  category    Category @relation(fields: [categoryId], references: [id])
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  isActive    Boolean    @default(true)
+  categoryId  String     @db.ObjectId
+  category    Category   @relation(fields: [categoryId], references: [id])
+  products    Product[]  // 👈 add this line if subcategories have products
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime?  @updatedAt
 }
-
 model Market {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   title       String
@@ -89,41 +88,35 @@ model Market {
 model Product {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   title          String
-   slug          String?                // ✅ Required + Unique
-  imageUrl       String?                               // ✅ Optional thumbnail
-  productImages  String[] @default([])                 // ✅ Gallery
+ slug            String @unique
+  imageUrl       String?
+  productImages  String[]
   description    String?
+  isActive       Boolean
+  isWholesale    Boolean
+  sku            String?
+  barcode        String?
+  productCode    String?
+  unit           String?
+  productPrice   Float
+  salePrice      Float
+  wholesalePrice Float?
+  wholesaleQty   Int?
+  productStock   Int?
+  qty            Int?
+  tags           String[]
+  categoryId    String      @db.ObjectId
+  category      Category    @relation(fields: [categoryId], references: [id])
+  subcategoryId String?
+  subcategory   SubCategory? @relation(fields: [subcategoryId], references: [id])
 
-  isActive       Boolean   @default(true)
-  isWholesale    Boolean   @default(false)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @db.ObjectId
 
-  sku            String?                               // Optional SKU
-  barcode        String?                               // Optional Barcode
-  productCode    String?                               // Optional internal code
-  unit           String?                               // Optional unit like kg, pcs
-productPrice   Float
-salePrice      Float
-wholesalePrice Float?
-  wholesaleQty   Int?                                  // Optional threshold qty
-  productStock   Int?                                  // Inventory
-  qty            Int?                                  // Default display quantity
-
-  tags           String[] @default([])                 // Array of tags
-
-  // 🔗 Category relation
-  categoryId     String     @db.ObjectId
-  category       Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  // 🔗 User/Vendor relation
-  userId         String     @db.ObjectId
-  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  // 🔗 Relations with order items & sales
-  orderItems     OrderItem[]
-  sales          Sale[]
-
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime?  @updatedAt
+  orderItems OrderItem[]
+  sales      Sale[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime?   @updatedAt
 }
 
 model Training {

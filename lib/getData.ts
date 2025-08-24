@@ -45,13 +45,14 @@ export async function getData<T>(endpoint: string): Promise<T> {
   }
 }
 
- 
+
 export async function getData<T>(endpoint: string): Promise<T[]> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const res = await fetch(`${baseUrl}/api/${endpoint}`);
   if (!res.ok) throw new Error("Failed to fetch");
   return res.json();
 }
+
 
 export async function getData(endpoint: string) {
   try {
@@ -66,7 +67,7 @@ export async function getData(endpoint: string) {
     console.log(error);
   }
 }
-*/}
+
 export async function getData<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {
   try {
     const baseUrl =
@@ -89,3 +90,47 @@ export async function getData<T>(endpoint: string, options: RequestInit = {}): P
   }
 }
 
+ 
+export async function getData(endpoint: string) {
+  // Ensure endpoint starts with /
+  const normalizedEndpoint = endpoint.startsWith("/")
+    ? endpoint
+    : `/${endpoint}`;
+
+  const baseUrl =
+    typeof window === "undefined"
+      ? process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      : "";
+
+  const url = normalizedEndpoint.startsWith("http")
+    ? normalizedEndpoint
+    : `${baseUrl}${normalizedEndpoint}`;
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    console.error(`Error fetching ${url}: ${res.status} ${res.statusText}`);
+    return null;
+  }
+
+  return res.json();
+}
+  */}
+export async function getData(endpoint: string) {
+  const url = endpoint.startsWith("http")
+    ? endpoint
+    : `http://localhost:3000/api/${endpoint.replace(/^\/+/, "")}`;
+
+  const res = await fetch(url, { cache: "no-store" });
+
+  if (!res.ok) {
+    console.error(`Error fetching ${url}: ${res.status} ${res.statusText}`);
+    return null;
+  }
+
+  return res.json();
+}

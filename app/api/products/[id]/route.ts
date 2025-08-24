@@ -1,48 +1,60 @@
-// app/api/products/[id]/route.ts
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
-interface Params {
-  id: string;
-}
-
-export async function GET(_request: NextRequest, { params }: { params: Params }) {
+// ------------------- GET PRODUCT -------------------
+export async function GET(
+  _request: NextRequest,
+  { params: { id } }: { params: { id: string } }
+) {
   try {
     const product = await db.product.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
-
     return NextResponse.json(product);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ message: "Failed to fetch product", error }, { status: 500 });
+    return NextResponse.json(
+      { message: "Failed to fetch product", error },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: Params }) {
+// ------------------- DELETE PRODUCT -------------------
+export async function DELETE(
+  _request: NextRequest,
+  { params: { id } }: { params: { id: string } }
+) {
   try {
-    const product = await db.product.findUnique({ where: { id: params.id } });
-
-    if (!product) {
-      return NextResponse.json({ message: "Product not found" }, { status: 404 });
+    const existingProduct = await db.product.findUnique({ where: { id } });
+    if (!existingProduct) {
+      return NextResponse.json(
+        { data: null, message: "Product not found" },
+        { status: 404 }
+      );
     }
 
-    const deleted = await db.product.delete({ where: { id: params.id } });
-
-    return NextResponse.json(deleted);
+    const deletedProduct = await db.product.delete({ where: { id } });
+    return NextResponse.json(deletedProduct);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ message: "Failed to delete product", error }, { status: 500 });
+    return NextResponse.json(
+      { message: "Failed to delete product", error },
+      { status: 500 }
+    );
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: Params }) {
+// ------------------- UPDATE PRODUCT -------------------
+export async function PUT(
+  request: NextRequest,
+  { params: { id } }: { params: { id: string } }
+) {
   try {
-    const body = await request.json();
-
     const {
       barcode,
       categoryId,
+      subcategoryId, // ✅ New
       description,
       farmerId,
       imageUrl,
@@ -60,13 +72,22 @@ export async function PUT(request: NextRequest, { params }: { params: Params }) 
       wholesaleQty,
       productStock,
       qty,
-    } = body;
+    } = await request.json();
 
-    const updated = await db.product.update({
-      where: { id: params.id },
+    const existingProduct = await db.product.findUnique({ where: { id } });
+    if (!existingProduct) {
+      return NextResponse.json(
+        { data: null, message: "Product not found" },
+        { status: 404 }
+      );
+    }
+
+    const updatedProduct = await db.product.update({
+      where: { id },
       data: {
         barcode,
         categoryId,
+        subcategoryId, // ✅ Save subcategory
         description,
         userId: farmerId,
         imageUrl,
@@ -87,9 +108,12 @@ export async function PUT(request: NextRequest, { params }: { params: Params }) 
       },
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json(updatedProduct);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ message: "Failed to update product", error }, { status: 500 });
+    return NextResponse.json(
+      { message: "Failed to update product", error },
+      { status: 500 }
+    );
   }
 }

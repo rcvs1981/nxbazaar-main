@@ -108,8 +108,8 @@ export const columns: ColumnDef<SubCategory>[] = [
         <ActionColumn
           row={row}
           title="SubCategory"
-          editEndpoint={`/dashboard/subcategories/update/${subcategory?.id}`}
-          endpoint={`/api/subcategories/${subcategory?.id}`}
+          editEndpoint={`/subcategories/update/${subcategory?.id}`}
+          endpoint={`/subcategories/${subcategory?.id}`}
         />
       );
     },

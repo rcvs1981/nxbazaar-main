@@ -1,71 +1,72 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-type SubCategoryInput = {
-  title: string;
-  slug: string;
-  imageUrl?: string | null;
-  description?: string | null;
-  isActive?: boolean;
-  categoryId: string;
-};
+import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    const subcategories = await db.subCategory.findMany({
-      include: {
-        category: true, // 
-      },
-      orderBy: { createdAt: "desc" },
+    const body = await request.json();
+    const { title, slug, categoryId, imageUrl, description, isActive } = body;
+
+    // ✅ Check if slug already exists
+    const existingSubCategory = await db.subCategory.findUnique({
+      where: { slug },
     });
 
-    return NextResponse.json({ success: true, data: subcategories });
+    if (existingSubCategory) {
+      return NextResponse.json(
+        {
+          data: null,
+          message: `SubCategory (${title}) already exists`,
+        },
+        { status: 409 }
+      );
+    }
+
+    // ✅ Check if parent category exists
+    const parentCategory = await db.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!parentCategory) {
+      return NextResponse.json(
+        { message: "Parent category not found" },
+        { status: 404 }
+      );
+    }
+
+    // ✅ Create SubCategory
+    const newSubCategory = await db.subCategory.create({
+      data: {
+        title,
+        slug,
+        imageUrl,
+        description,
+        isActive,
+        categoryId,
+      },
+    });
+
+    return NextResponse.json(newSubCategory, { status: 201 });
   } catch (error) {
-    console.error("Error fetching subcategories:", error);
+    console.error("[POST_SUBCATEGORY_ERROR]", error);
     return NextResponse.json(
-      { success: false, message: "Failed to fetch subcategories" },
+      { message: "Failed to create subcategory", error: (error as Error).message },
       { status: 500 }
     );
   }
 }
 
-export async function POST(req: Request) {
+export async function GET() {
   try {
-    const body: SubCategoryInput = await req.json();
-
-    if (!body.title || !body.slug || !body.categoryId) {
-      return NextResponse.json(
-        { success: false, message: "title, slug, and categoryId are required" },
-        { status: 400 }
-      );
-    }
-
-    const newSubCategory = await db.subCategory.create({
-      data: {
-        title: body.title,
-        slug: body.slug,
-        imageUrl: body.imageUrl ?? null,
-        description: body.description ?? null,
-        isActive: body.isActive ?? true,
-        categoryId: body.categoryId,
-      },
+    const subcategories = await db.subCategory.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { category: true }, // Include parent category
     });
 
+    return NextResponse.json(subcategories);
+  } catch (error) {
+    console.error("[GET_SUBCATEGORIES_ERROR]", error);
     return NextResponse.json(
-      { success: true, message: "Subcategory created successfully", data: newSubCategory },
-      { status: 201 }
-    );
-  } catch (error: any) {
-    console.error("Error creating subcategory:", error);
-
-    if (error.code === "P2002") {
-      return NextResponse.json(
-        { success: false, message: "Slug already exists" },
-        { status: 409 }
-      );
-    }
-
-    return NextResponse.json(
-      { success: false, message: "Subcategory create failed" },
+      { message: "Failed to fetch subcategories", error: (error as Error).message },
       { status: 500 }
     );
   }

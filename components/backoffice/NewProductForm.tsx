@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useForm} from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 
 import ArrayItemsInput from "@/components/FormInputs/ArrayItemsInput";
 import SelectInput from "@/components/FormInputs/SelectInput";
@@ -10,57 +11,65 @@ import TextareaInput from "@/components/FormInputs/TextAreaInput";
 import TextInput from "@/components/FormInputs/TextInput";
 import ToggleInput from "@/components/FormInputs/ToggleInput";
 import MultipleImageInput from "@/components/FormInputs/MultipleImageInput";
-import type { Option } from "@/types/Option";
+
 import { makePostRequest, makePutRequest } from "@/lib/apiRequest";
 import { generateSlug } from "@/lib/generateSlug";
 import { generateUserCode } from "@/lib/generateUserCode";
 
-
-
-export type ProductFormValues = {
+// ✅ Types
+type Category = { id: string; title: string };
+type SubCategory = { id: string; title: string; categoryId: string };
+type Farmer = { id: string; title: string };
+interface NewProductFormProps {
+  farmers: Farmer[];
+}
+export interface ProductFormValues extends Record<string, any> {
   id?: string;
   title: string;
-  sku?: string;
-  barcode?: string;
+  sku: string;
+  barcode: string;
   productPrice: number;
   salePrice: number;
   productStock: number;
-  unit?: string;
+  unit: string;
   categoryId: string;
+  subCategoryId: string;
   farmerId: string;
+  wholesalePrice?: number;
+  wholesaleQty?: number;
   description?: string;
   isActive: boolean;
   isWholesale: boolean;
-  wholesalePrice?: number;
-  wholesaleQty?: number;
   slug?: string;
-  tags?: string[];
-  productImages?: string[];
   productCode?: string;
   qty?: number;
-};
+  productImages?: string[];
+  tags?: string[];
+  price: number;
+  
+}
 
-
-type Props = {
-   categories: Option[];
-  farmers: Option[];
+interface NewProductFormProps {
+  categories: Category[];
+  subcategories: SubCategory[];
+  farmers: Farmer[];
   updateData?: Partial<ProductFormValues>;
-};
+}
 
 export default function NewProductForm({
-  
   categories,
+  subcategories,
   farmers,
   updateData = {},
-}: Props) {
+}: NewProductFormProps) {
   const id = updateData?.id ?? "";
-  const initialImageUrl = updateData?.productImages ?? [];
-  const initialTags = updateData?.tags ?? [];
+  const [tags, setTags] = useState<string[]>(updateData?.tags ?? []);
+  const [loading, setLoading] = useState(false);
+  const [productImages, setProductImages] = useState<string[]>(
+    updateData?.productImages ?? []
+  );
 
-  const [imageUrls, setImageUrls] = useState<string[]>(initialImageUrl);
-  
-  const [tags, setTags] = useState<string[]>(initialTags);
-  const [loading, setLoading] = useState<boolean>(false);
+  const router = useRouter();
 
   const {
     register,
@@ -76,49 +85,44 @@ export default function NewProductForm({
     },
   });
 
-  const isActive = watch("isActive");
   const isWholesale = watch("isWholesale");
+  const selectedCategoryId = watch("categoryId");
 
-  const router = useRouter();
+  // ✅ Filter subcategories based on selected category
+  const filteredSubcategories = useMemo(
+    () =>
+      subcategories.filter((sc) => sc.categoryId === selectedCategoryId),
+    [subcategories, selectedCategoryId]
+  );
 
-
-async function onSubmit(data:ProductFormValues) {
-    const slug = generateSlug(data.title);
-    const productCode = generateUserCode("LLP", data.title);
-    data.slug = slug;
-  
-    data.tags = tags;
+  const onSubmit: SubmitHandler<ProductFormValues> = async (data) => {
+    data.slug = generateSlug(data.title);
+    data.productCode = generateUserCode("LLP", data.title);
     data.qty = 1;
-    data.productCode = productCode;
-    console.log(data);
-if (id) {
-  data.id = id;
+    data.productImages = productImages;
+    data.tags = tags;
 
-  await makePutRequest<ProductFormValues>({
-    setLoading,
-    endpoint: `api/products/${id}`,
-    data,
-    resourceName: "Product",
-    reset: () => reset(),
-    redirect: () => router.push("/dashboard/products"),
-  });
+    if (id) {
+      await makePutRequest<ProductFormValues>({
+        setLoading,
+        endpoint: `api/products/${id}`,
+        data,
+        resourceName: "Product",
+        redirect: () => router.push("/dashboard/products"),
+      });
+    } else {
+      await makePostRequest<ProductFormValues>({
+        setLoading,
+        endpoint: "api/products",
+        data,
+        resourceName: "Product",
+        reset: () => reset(),
+        redirect: () => router.push("/dashboard/products"),
+      });
+    }
 
-  console.log("Update Request: ", data);
-} else {
- await makePostRequest<ProductFormValues>({
-    setLoading,
-    endpoint: "api/products",
-    data,
-    resourceName: "Product",
-    reset: () => reset(),
-    redirect: () => router.push("/dashboard/products"),
-  });
-
-  console.log("Update Request: ", data);
-};
-     
-      setTags([]);
-    
+    setProductImages([]);
+    setTags([]);
   };
 
   return (
@@ -127,111 +131,72 @@ if (id) {
       className="w-full max-w-4xl p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 mx-auto my-3"
     >
       <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
-        <TextInput
-          label="Product Title"
-          name="title"
-          register={register}
-          errors={errors}
-        />
-        <TextInput
-          label="Product SKU"
-          name="sku"
-          register={register}
-          errors={errors}
-        />
-        <TextInput
-          label="Product Barcode"
-          name="barcode"
-          register={register}
-          errors={errors}
-        />
-        <TextInput
-          label="Product Price (Before Discount)"
-          name="productPrice"
-          type="number"
-          register={register}
-          errors={errors}
-        />
-        <TextInput
-          label="Product Sale Price(Discounted)"
-          name="salePrice"
-          type="number"
-          register={register}
-          errors={errors}
-        />
-        <TextInput
-          label="Product Stock"
-          name="productStock"
-          type="number"
-          register={register}
-          errors={errors}
-        />
-        <TextInput
-          label="Unit of Measurement(eg Kilograms)"
-          name="unit"
-          register={register}
-          errors={errors}
-        />
-   <SelectInput<ProductFormValues>
-  label="Select Category"
-  name="categoryId"
-  options={categories}
-  register={register}
-  errors={errors}
-/>
+        {/* Product Info */}
+        <TextInput label="Product Title" name="title" register={register} errors={errors} />
+        <TextInput label="Product SKU" name="sku" register={register} errors={errors} />
+        <TextInput label="Product Barcode" name="barcode" register={register} errors={errors} />
+        <TextInput label="Product Price (Before Discount)" name="productPrice" type="number" register={register} errors={errors} />
+        <TextInput label="Product Sale Price (Discounted)" name="salePrice" type="number" register={register} errors={errors} />
+        <TextInput label="Product Stock" name="productStock" type="number" register={register} errors={errors} />
+        <TextInput label="Unit of Measurement (eg: Kilograms)" name="unit" register={register} errors={errors} />
 
-<SelectInput<ProductFormValues>
-  label="Select Farmer"
-  name="farmerId"
-  options={farmers}
-  register={register}
-  errors={errors}
-/>
+        {/* Category */}
+        <SelectInput<ProductFormValues>
+          label="Select Category"
+          name="categoryId"
+          register={register}
+          errors={errors}
+          options={categories}
+        />
 
+        {/* Subcategory */}
+        <SelectInput<ProductFormValues>
+          label="Select Subcategory"
+          name="subCategoryId"
+          register={register}
+          errors={errors}
+          options={filteredSubcategories}
+        />
+
+        {/* Farmer */}
+        <SelectInput<ProductFormValues>
+          label="Select Farmer"
+          name="farmerId"
+          register={register}
+          errors={errors}
+          options={farmers}
+        />
+
+        {/* Wholesale */}
         <ToggleInput
           label="Supports Wholesale Selling"
           name="isWholesale"
           trueTitle="Supported"
           falseTitle="Not Supported"
           register={register}
-          
         />
 
         {isWholesale && (
           <>
-            <TextInput
-              label="Wholesale Price"
-              name="wholesalePrice"
-              type="number"
-              register={register}
-              errors={errors}
-            />
-            <TextInput
-              label="Minimum Wholesale Qty"
-              name="wholesaleQty"
-              type="number"
-              register={register}
-              errors={errors}
-            />
+            <TextInput label="Wholesale Price" name="wholesalePrice" type="number" register={register} errors={errors} />
+            <TextInput label="Minimum Wholesale Qty" name="wholesaleQty" type="number" register={register} errors={errors} />
           </>
         )}
 
-    <MultipleImageInput
-  label="Upload Product Images"
-  imageUrls={imageUrls}
-  setImageUrls={setImageUrls}
-  endpoint="multipleProductsUploader"
-/>
+        {/* Images + Tags */}
+        <MultipleImageInput
+          imageUrls={productImages}
+          setImageUrls={setProductImages}
+          endpoint="multipleProductsUploader"
+          label="Product Images"
+        />
 
         <ArrayItemsInput setItems={setTags} items={tags} itemTitle="Tag" />
 
-        <TextareaInput
-          label="Product Description"
-          name="description"
-          register={register}
-          errors={errors}
-        />
+        {/* Description */}
+        <TextareaInput label="Product Description" name="description" register={register} errors={errors} />
 
+        {/* Status */}
         <ToggleInput
           label="Publish your Product"
           name="isActive"
@@ -239,15 +204,12 @@ if (id) {
           falseTitle="Draft"
           register={register}
         />
-        {!isActive && <p>This item is inactive</p>}
       </div>
 
       <SubmitButton
         isLoading={loading}
         buttonTitle={id ? "Update Product" : "Create Product"}
-        loadingButtonTitle={`${
-          id ? "Updating" : "Creating"
-        } Product please wait...`}
+        loadingButtonTitle={`${id ? "Updating" : "Creating"} Product please wait...`}
       />
     </form>
   );
