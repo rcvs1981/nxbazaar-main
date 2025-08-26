@@ -2,10 +2,14 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
-
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-export const columns = [
+
+import { ColumnDef } from "@tanstack/react-table";
+import { Customer } from "@/types/Customers";
+
+export const columns: ColumnDef<Customer>[] = [
+  
   {
     id: "select",
     header: ({ table }) => (
@@ -32,11 +36,6 @@ export const columns = [
     accessorKey: "name",
     header: ({ column }) => <SortableColumn column={column} title="Name" />,
   },
-  // {
-  //   accessorKey: "profileImageUrl",
-  //   header: "Profile Image",
-  //   cell: ({ row }) => <ImageColumn row={row} accessorKey="profileImageUrl" />,
-  // },
   {
     accessorKey: "email",
     header: "Email",
@@ -45,10 +44,6 @@ export const columns = [
     accessorKey: "role",
     header: "Role",
   },
-  // {
-  //   accessorKey: "isActive",
-  //   header: "Active",
-  // },
   {
     accessorKey: "createdAt",
     header: "Date Created",
@@ -62,8 +57,8 @@ export const columns = [
         <ActionColumn
           row={row}
           title="Customer"
-          editEndpoint={`customers/update/${customer.id}`}
-          endpoint={`customers/${customer.id}`}
+          editEndpoint={`/customers/update/${customer.id}`}
+          endpoint={`/customers/${customer.id}`}
         />
       );
     },

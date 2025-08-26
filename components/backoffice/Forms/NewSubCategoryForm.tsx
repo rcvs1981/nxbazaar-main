@@ -109,7 +109,7 @@ export default function NewSubCategoryForm({
         <ImageInput
           label="SubCategory Image"
           imageUrl={imageUrl}
-          setImageUrlAction={setImageUrl}
+          setImageUrl={setImageUrl}
           endpoint="subcategoryImageUploader"
         />
 

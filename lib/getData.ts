@@ -119,7 +119,7 @@ export async function getData(endpoint: string) {
 
   return res.json();
 }
-  */}
+ 
 export async function getData(endpoint: string) {
   const url = endpoint.startsWith("http")
     ? endpoint
@@ -132,5 +132,16 @@ export async function getData(endpoint: string) {
     return null;
   }
 
+  return res.json();
+}
+ */}
+ // lib/getData.ts
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
+
+export async function getData<T>(endpoint: string): Promise<T> {
+  const res = await fetch(`${API_URL}/${endpoint}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${endpoint}`);
+  }
   return res.json();
 }

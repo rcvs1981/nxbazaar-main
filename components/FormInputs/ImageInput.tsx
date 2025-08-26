@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { UploadDropzone } from "@/lib/uploadthing";
 import { Pencil } from "lucide-react";
@@ -13,17 +13,19 @@ type UploadthingEndpoint =
   | "marketLogoUploader"
   | "trainingImageUploader"
   | "subcategoryImageUploader"
+  | "customerProfileUploader";
+
 interface ImageInputProps {
   label: string;
   imageUrl?: string;
-  setImageUrlAction: (url: string) => void;
+  setImageUrl: (url: string) => void;   // ✅ renamed
   className?: string;
   endpoint: UploadthingEndpoint;
 }
 
 export default function ImageInput({
   imageUrl,
-  setImageUrlAction,
+  setImageUrl,   // ✅ renamed
   endpoint,
   label,
   className,
@@ -36,7 +38,7 @@ export default function ImageInput({
         </label>
         {imageUrl && (
           <button
-            onClick={() => setImageUrlAction("")}
+            onClick={() => setImageUrl("")}
             type="button"
             className="flex items-center space-x-2 bg-slate-900 text-white px-4 py-2 rounded-md"
           >
@@ -58,8 +60,10 @@ export default function ImageInput({
         <UploadDropzone
           endpoint={endpoint}
           onClientUploadComplete={(res) => {
-            setImageUrlAction(res[0].url);
-            toast.success("Image uploaded");
+            if (res && res[0]?.url) {
+              setImageUrl(res[0].url);
+              toast.success("Image uploaded");
+            }
           }}
           onUploadError={(error) => {
             toast.error("Upload failed");

@@ -99,7 +99,7 @@ export default function NewCategoryForm({ updateData = {} }: { updateData?: Part
      <ImageInput
         label="Category Image"
         imageUrl={imageUrl}
-        setImageUrlAction={setImageUrl}
+        setImageUrl={setImageUrl}
         endpoint="categoryImageUploader"
       />
         <ToggleInput

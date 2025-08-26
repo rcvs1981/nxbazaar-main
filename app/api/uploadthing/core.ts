@@ -35,6 +35,11 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ file }) => {
       console.log("Upload complete for product:", file);
     }),
+     customerProfileUploader: f({ image: { maxFileSize: "4MB" } })
+    .onUploadComplete(async ({ file }) => {
+      console.log("Customer upload complete:", file);
+      
+    }),
 
 } satisfies FileRouter;
 
