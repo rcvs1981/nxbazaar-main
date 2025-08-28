@@ -39,6 +39,7 @@ model Banner {
 // 1 to Many => Category => Product Relation
 // many to many => Market => Category
 // 1 to Many => Category => SubCategory  relation
+
 model Category {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   title         String

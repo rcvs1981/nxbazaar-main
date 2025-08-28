@@ -1,17 +1,17 @@
 "use client";
 
-import Image from "next/image";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ColumnDef } from "@tanstack/react-table";
+import type { Table } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
 import ImageColumn from "@/components/DataTableColumns/ImageColumn";
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
-import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-export const columns = [
+import { Sale } from "@/types/Sales";
+
+export const columns: ColumnDef<Sale>[] = [
   {
     id: "select",
-    header: ({ table }) => (
+    header: ({ table }: { table: Table<Sale> }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
@@ -38,11 +38,11 @@ export const columns = [
   },
   {
     accessorKey: "productTitle",
+    id: "title", // alias id for filtering
     header: ({ column }) => (
       <SortableColumn column={column} title="Product Title" />
     ),
   },
-
   {
     accessorKey: "productPrice",
     header: "Price",
@@ -60,18 +60,4 @@ export const columns = [
     header: "Date Created",
     cell: ({ row }) => <DateColumn row={row} accessorKey="createdAt" />,
   },
-  // {
-  //   id: "actions",
-  //   cell: ({ row }) => {
-  //     const product = row.original;
-  //     return (
-  //       <ActionColumn
-  //         row={row}
-  //         title="Product"
-  //         editEndpoint={`products/update/${product.id}`}
-  //         endpoint={`products/${product.id}`}
-  //       />
-  //     );
-  //   },
-  // },
 ];

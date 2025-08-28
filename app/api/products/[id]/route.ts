@@ -87,7 +87,7 @@ export async function PUT(
       data: {
         barcode,
         categoryId,
-        subcategoryId, // ✅ Save subcategory
+        subcategoryId, 
         description,
         userId: farmerId,
         imageUrl,

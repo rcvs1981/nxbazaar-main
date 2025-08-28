@@ -134,7 +134,7 @@ export async function getData(endpoint: string) {
 
   return res.json();
 }
- */}
+ 
  // lib/getData.ts
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
 
@@ -144,4 +144,18 @@ export async function getData<T>(endpoint: string): Promise<T> {
     throw new Error(`Failed to fetch ${endpoint}`);
   }
   return res.json();
+}
+  */}
+export async function getData(endpoint: string) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    // console.log(`${baseUrl}/api/${endpoint}`);
+    const response = await fetch(`${baseUrl}/api/${endpoint}`, {
+      cache: "no-store",
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
 }

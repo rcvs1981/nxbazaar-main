@@ -108,7 +108,7 @@ async function onSubmit(data: FormData) {
  <ImageInput
         label="Category Image"
         imageUrl={imageUrl}
-        setImageUrlAction={setImageUrl}
+        setImageUrl={setImageUrl}
         endpoint="marketLogoUploader"
       />
           <TextareaInput
