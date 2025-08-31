@@ -110,7 +110,7 @@ export default function NewCategoryForm({ updateData = {} }: { updateData?: Part
           register={register}
         />
         {isActive ? (
-  <p className="text-green-500">This category is active</p>
+  <p className="text-orange-500">This category is active</p>
 ) : (
   <p className="text-red-500">This category is inactive</p>
 )}

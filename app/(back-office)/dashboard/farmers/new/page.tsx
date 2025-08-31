@@ -1,6 +1,6 @@
 "use client";
 
-import NewFarmerForm from "@/components/backoffice/NewFarmerForm";
+import {NewFarmerForm} from "@/components/backoffice/NewFarmerForm";
 import FormHeader from "@/components/backoffice/FormHeader";
 
 export default function NewFarmer() {

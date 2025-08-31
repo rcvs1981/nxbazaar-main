@@ -9,7 +9,8 @@ import SubmitButton from "../FormInputs/SubmitButton";
 import TextInput from "../FormInputs/TextInput";
 
 type RegisterFormProps = {
-  role?: "USER" | "FARMER";
+ role?: "USER" | "FARMER";
+  plan?: string | null; 
 };
 
 type FormValues = {
@@ -20,11 +21,10 @@ type FormValues = {
   plan?: string | null;
 };
 
-export default function RegisterForm({ role = "USER" }: RegisterFormProps) {
-  const router = useRouter(); // Client-side navigation
+export default function RegisterForm({ role = "USER", plan: planProp }: RegisterFormProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const plan = searchParams.get("plan");
-
+  const plan = searchParams.get("plan") ?? planProp; //
   const {
     register,
     handleSubmit,
@@ -136,7 +136,7 @@ export default function RegisterForm({ role = "USER" }: RegisterFormProps) {
 
         {role === "USER" ? (
           <p className="text-[0.75rem] font-light text-gray-500 dark:text-gray-400 py-4">
-            Are you a Farmer?{" "}
+            Are you a Farmer/Vendor/Supplier?{" "}
             <Link
               href="/farmer-pricing"
               className="font-medium text-purple-600 hover:underline dark:text-purple-500"
