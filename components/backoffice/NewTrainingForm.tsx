@@ -63,6 +63,7 @@ export default function NewTrainingForm({ categories, updateData = {} }: NewTrai
           reset: () => reset(),
           redirect: () => router.push("/dashboard/community"),
         });
+     
       
         console.log("Update Request: ", data);
       } else {
@@ -75,7 +76,7 @@ export default function NewTrainingForm({ categories, updateData = {} }: NewTrai
           redirect: () => router.push("/dashboard/community"),
         });
       
-        console.log("Update Request: ", data);
+       console.log("Create Request: ", data);
       }
       setImageUrl("");
       setContent("");
@@ -96,13 +97,13 @@ export default function NewTrainingForm({ categories, updateData = {} }: NewTrai
           className="w-full"
         />
 
-        <SelectInput<TrainingFormData>
+  <SelectInput<TrainingFormData>
   label="Select Category"
   name="categoryId"
   register={register}
   errors={errors}
   className="w-full"
-  options={categories}
+  options={categories}   // ✅ used here
 />
 
         <TextareaInput
@@ -115,7 +116,7 @@ export default function NewTrainingForm({ categories, updateData = {} }: NewTrai
       <ImageInput
   label="Training Thumbnail"
   imageUrl={imageUrl}
-  setImageUrlAction={setImageUrl} // ✅ FIXED: correct prop name
+  setImageUrl={setImageUrl} // ✅ FIXED: correct prop name
   endpoint="trainingImageUploader"
 />
 

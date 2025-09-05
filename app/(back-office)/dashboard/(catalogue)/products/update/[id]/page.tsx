@@ -1,58 +1,90 @@
+import React from "react";
 import FormHeader from "@/components/backoffice/FormHeader";
 import NewProductForm from "@/components/backoffice/NewProductForm";
 import { getData } from "@/lib/getData";
-import React from "react";
 
-// Product, Category, and Farmer टाइप्स Define करें
+// Types
 interface Params {
-  params: {
-    id: string;
-  };
-}
-
-interface User {
   id: string;
-  name: string;
-  role: string;
-}
-
-interface Category {
-  id: string;
-  title: string;
 }
 
 interface Product {
   id: string;
   title: string;
   slug: string;
-  // Include बाकी फ़ील्ड्स जो आपके Product में हैं
+  imageUrl?: string;
+  productImages: string[];
+  description?: string;
+  isActive: boolean;
+  isWholesale: boolean;
+  sku?: string;
+  barcode?: string;
+  productCode?: string;
+  unit?: string;
+  productPrice: number;
+  salePrice: number;
+  categoryId?: string;
+  farmerId?: string;
 }
 
-export default async function UpdateProduct({ params: { id } }: Params) {
+interface CategoryAPI {
+  id: string;
+  title: string;
+  subcategories?: {
+    id: string;
+    title: string;
+  }[];
+}
+
+interface CategoryForm {
+  id: string;
+  name: string;
+  subcategories?: { id: string; name: string }[];
+}
+
+//interface Farmer {
+//  id: string;
+//  name: string;
+//}
+
+//interface User {
+//  id: string;
+//  name: string;
+//  role: string;
+//}
+
+export default async function UpdateProduct({ params }: { params: Params }) {
+  const { id } = params;
   const product: Product = await getData(`products/${id}`);
+  const categoriesData: CategoryAPI[] = await getData("categories");
+  //const usersData: User[] = await getData("users");
 
-  const categoriesData: Category[] = await getData("categories");
-  const usersData: User[] = await getData("users");
 
-  const farmers = usersData
-    .filter((user) => user.role === "FARMER")
-    .map((farmer) => ({
-      id: farmer.id,
-      title: farmer.name,
-    }));
-
-  const categories = categoriesData.map((category) => ({
+  // Map categories to form shape
+ const categories: CategoryForm[] = categoriesData.map((category) => ({
     id: category.id,
-    title: category.title,
+    name: category.title,
+    subcategories: category.subcategories?.map((sub) => ({
+      id: sub.id,
+      name: sub.title,
+    })),
   }));
 
+  // Map farmers
+
+//const farmersForForm: Farmer[] = usersData
+//  .filter((user) => user.role === "FARMER")
+//  .map((user) => ({
+  //  id: user.id,
+  //  name: user.name,
+  //}));
   return (
     <div>
       <FormHeader title="Update Product" />
       <NewProductForm
         updateData={product}
         categories={categories}
-        farmers={farmers}
+        // farmers={farmersForForm}
       />
     </div>
   );

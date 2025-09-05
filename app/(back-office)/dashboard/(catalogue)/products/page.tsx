@@ -1,13 +1,14 @@
+
 import PageHeader from "@/components/backoffice/PageHeader";
-import { DataTable } from "@/components/data-table-components/DataTable";
-import { getData } from "@/lib/getData";
+import type { Product } from "@/types/Product";
+import {DataTable} from "@/components/data-table-components/DataTable";
+
+
 import React from "react";
+import { getData } from "@/lib/getData";
 import { columns } from "./columns";
-import { Product } from "@/types/Product"; // 
-
-export default async function Page() {
-const products: Product[] = (await getData("products")) ?? [];
-
+export default async function page() {
+ const products: Product[] = await getData("products");
   return (
     <div>
       {/* Header */}
@@ -17,8 +18,8 @@ const products: Product[] = (await getData("products")) ?? [];
         linkTitle="Add Product"
       />
 
-      <div className="py-8">
-       <DataTable<Product> columns={columns} data={products} />
+      <div className="py-0">
+       <DataTable columns={columns} data={products}  />;
       </div>
     </div>
   );

@@ -97,7 +97,7 @@ export default function BannerForm({ updateData = {} }: { updateData?: Partial<B
         <ImageInput
         label="Banner Image"
         imageUrl={imageUrl}
-        setImageUrlAction={setImageUrl}
+        setImageUrl={setImageUrl}
         endpoint="bannerImageUploader"
       />
         <ToggleInput

@@ -9,9 +9,7 @@ import {
   Building2,
   ChevronDown,
   ChevronRight,
-  CircleDollarSign,
-  ExternalLink,
-  HeartHandshake,
+
   LayoutGrid,
   LayoutList,
   LogOut,
@@ -55,12 +53,8 @@ export default function Sidebar({ showSidebar, setShowSidebar }: SidebarProps) {
     { title: "Farmers", icon: UserSquare2, href: "/dashboard/farmers" },
     { title: "Orders", icon: Truck, href: "/dashboard/orders" },
     { title: "Sales", icon: Truck, href: "/dashboard/sales" },
-    { title: "Our Staff", icon: User, href: "/dashboard/staff" },
-    { title: "Limi Community", icon: Building2, href: "/dashboard/community" },
-    { title: "Wallet", icon: CircleDollarSign, href: "/dashboard/wallet" },
-    { title: "Farmer Support", icon: HeartHandshake, href: "/dashboard/farmer-support" },
-    { title: "Settings", icon: LayoutGrid, href: "/dashboard/settings" },
-    { title: "Online Store", icon: ExternalLink, href: "/" },
+    { title: "Staff", icon: User, href: "/dashboard/staff" },
+    { title: "Community", icon: Building2, href: "/dashboard/community" },
     { title: "Profile", icon: Truck, href: "/dashboard/profile" },
   ];
 

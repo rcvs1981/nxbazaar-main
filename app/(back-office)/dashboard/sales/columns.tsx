@@ -1,17 +1,28 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import type { Table } from "@tanstack/react-table";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
 import ImageColumn from "@/components/DataTableColumns/ImageColumn";
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
-import { Sale } from "@/types/Sales";
+// import ActionColumn from "@/components/DataTableColumns/ActionColumn";
+
+export type Sale = {
+  id: string;
+  vendorId: string;
+  productImage: string;
+  productTitle: string;
+  productPrice: number;
+  productQty: number;
+  total: number;
+  createdAt: string;
+};
 
 export const columns: ColumnDef<Sale>[] = [
   {
     id: "select",
-    header: ({ table }: { table: Table<Sale> }) => (
+    header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
@@ -38,26 +49,30 @@ export const columns: ColumnDef<Sale>[] = [
   },
   {
     accessorKey: "productTitle",
-    id: "title", // alias id for filtering
     header: ({ column }) => (
       <SortableColumn column={column} title="Product Title" />
     ),
   },
-  {
-    accessorKey: "productPrice",
-    header: "Price",
-  },
-  {
-    accessorKey: "productQty",
-    header: "Qty",
-  },
-  {
-    accessorKey: "total",
-    header: "Total",
-  },
+  { accessorKey: "productPrice", header: "Price" },
+  { accessorKey: "productQty", header: "Qty" },
+  { accessorKey: "total", header: "Total" },
   {
     accessorKey: "createdAt",
     header: "Date Created",
     cell: ({ row }) => <DateColumn row={row} accessorKey="createdAt" />,
   },
+  // {
+  //   id: "actions",
+  //   cell: ({ row }) => {
+  //     const product = row.original;
+  //     return (
+  //       <ActionColumn
+  //         row={row}
+  //         title="Product"
+  //         editEndpoint={`products/update/${product.id}`}
+  //         endpoint={`products/${product.id}`}
+  //       />
+  //     );
+  //   },
+  // },
 ];

@@ -25,7 +25,7 @@ interface ImageInputProps {
 
 export default function ImageInput({
   imageUrl,
-  setImageUrl,   // ✅ renamed
+  setImageUrl,  
   endpoint,
   label,
   className,

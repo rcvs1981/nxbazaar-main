@@ -1,12 +1,14 @@
+import React from "react";
 import { DataTable } from "@/components/data-table-components/DataTable";
 import { getData } from "@/lib/getData";
-import React from "react";
-import { columns } from "./columns";
-import { Sale } from "@/types/Sales";
+import { columns, Sale } from "./columns";
 
-export default async function Sales({ params }: { params: { id: string } }) {
+export default async function Sales() {
   const allSales: Sale[] = await getData("sales");
-  const farmerSales = allSales.filter((sale) => sale.vendorId === params.id);
 
-  return <DataTable data={farmerSales} columns={columns} />;
+  return (
+    <div className="py-8">
+    <DataTable data={allSales} columns={columns} filterKeys={["productTitle"]} />
+    </div>
+  );
 }
