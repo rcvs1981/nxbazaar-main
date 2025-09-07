@@ -1,9 +1,11 @@
-import React from 'react'
+import React from "react";
+import Pricing from "@/components/Pricing";
 
 export default function page() {
+
   return (
     <div>
-      products
+      <Pricing />
     </div>
-  )
+  );
 }

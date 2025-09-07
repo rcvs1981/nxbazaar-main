@@ -7,6 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model SubCategory {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String    @unique
+  imageUrl    String?
+  description String?
+  isActive    Boolean   @default(true)
+  categoryId  String    @db.ObjectId
+  category    Category  @relation(fields: [categoryId], references: [id])
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+}
+
 // title, couponCode, expiryDate
 model Coupon {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -14,7 +28,8 @@ model Coupon {
   couponCode String
   expiryDate DateTime
   isActive   Boolean
-  
+  user       User     @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendorId   String   @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -35,11 +50,11 @@ model Banner {
 // 1 to 1 Relationship User => Profile Relation
 // 1 to Many => Category => Product Relation
 // many to many => Market => Category
-// many to many => Category => Product => SubCategory Relation
+
 model Category {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   title         String
-  slug          String  @unique
+  slug          String        @unique
   imageUrl      String?
   description   String?
   isActive      Boolean
@@ -51,20 +66,6 @@ model Category {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
-}
-
-model SubCategory {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  slug        String    @unique
-  imageUrl    String?
-  description String?
-  isActive    Boolean   @default(true)
-  categoryId  String    @db.ObjectId
-  category    Category  @relation(fields: [categoryId], references: [id])
-  products    Product[] // 👈 add this line if subcategories have products
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime? @updatedAt
 }
 
 model Market {
@@ -83,7 +84,7 @@ model Market {
 }
 
 model Product {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
   title          String
   slug           String   @unique
   imageUrl       String?
@@ -102,15 +103,17 @@ model Product {
   productStock   Int?
   qty            Int?
   tags           String[]
-  categoryId     String       @db.ObjectId
-  category       Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  subCategoryId  String?      @db.ObjectId
-  subCategory    SubCategory? @relation(fields: [subCategoryId], references: [id])
-  
+  categoryId     String   @db.ObjectId
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime?   @updatedAt
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId        String       @db.ObjectId
+  subCategoryId String?      @db.ObjectId
+  subCategory   SubCategory? @relation(fields: [subCategoryId], references: [id])
+  orderItems    OrderItem[]
+  sales         Sale[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime?    @updatedAt
 }
 
 model Training {
@@ -149,8 +152,8 @@ model User {
   email             String?        @unique
   password          String
   emailVerified     Boolean        @default(false)
-  
-
+  products          Product[]
+  coupons           Coupon[]
   role              UserRole       @default(USER)
   plan              String?
   verificationToken String?
@@ -252,7 +255,7 @@ model OrderItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Sale {
@@ -268,6 +271,6 @@ model Sale {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   vendor       User     @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

@@ -2,11 +2,26 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
-import ImageColumn from "@/components/DataTableColumns/ImageColumn";
+
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
 import Status from "@/components/DataTableColumns/Status";
-export const columns = [
+import { ColumnDef } from "@tanstack/react-table";
+
+// ✅ Define the type for your data (Farmer/User)
+export type Farmer = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  plan: string;
+  status: string;
+  createdAt: string; // or Date if your API returns real dates
+  profileImageUrl?: string | null;
+  isActive?: boolean;
+};
+
+export const columns: ColumnDef<Farmer>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -33,10 +48,13 @@ export const columns = [
     accessorKey: "name",
     header: ({ column }) => <SortableColumn column={column} title="Name" />,
   },
+  // Optional profile image column
   // {
   //   accessorKey: "profileImageUrl",
   //   header: "Profile Image",
-  //   cell: ({ row }) => <ImageColumn row={row} accessorKey="profileImageUrl" />,
+  //   cell: ({ row }) => (
+  //     <ImageColumn row={row} accessorKey="profileImageUrl" />
+  //   ),
   // },
   {
     accessorKey: "email",
@@ -55,10 +73,6 @@ export const columns = [
     header: "Status",
     cell: ({ row }) => <Status row={row} accessorKey="status" />,
   },
-  // {
-  //   accessorKey: "isActive",
-  //   header: "Active",
-  // },
   {
     accessorKey: "createdAt",
     header: "Date Created",
@@ -67,7 +81,7 @@ export const columns = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const farmer = row.original;
+      const farmer = row.original; // ✅ now fully typed as Farmer
       return (
         <ActionColumn
           row={row}

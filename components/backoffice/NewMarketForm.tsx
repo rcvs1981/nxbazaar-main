@@ -29,8 +29,8 @@ interface FormData {
   description: string;
   isActive: boolean;
   categoryIds: string[];
-  slug?: string;         // ✅ Optional, added manually
-  logoUrl?: string;      // ✅ Optional, added manually
+  slug?: string;        
+  logoUrl?: string;      
 }
 
 export default function NewMarketForm({ categories }: NewMarketFormProps) {
