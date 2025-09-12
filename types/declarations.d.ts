@@ -1,14 +1,26 @@
-// declarations.d.ts
-declare module "nuka-carousel/lib/carousel" {
+// types/nuka-carousel.d.ts
+declare module "nuka-carousel" {
   import * as React from "react";
+
+  export interface CarouselControlsConfig {
+    nextButtonText?: string;
+    prevButtonText?: string;
+    pagingDotsStyle?: React.CSSProperties;
+    [key: string]: any;
+  }
 
   export interface CarouselProps {
     autoplay?: boolean;
     wrapAround?: boolean;
-    defaultControlsConfig?: Record<string, any>;
+    pauseOnHover?: boolean;
+    slidesToShow?: number;
+    slidesToScroll?: number;
+    defaultControlsConfig?: CarouselControlsConfig;
     className?: string;
     children?: React.ReactNode;
+    [key: string]: any;
   }
 
-  export default class Carousel extends React.Component<CarouselProps> {}
+  const Carousel: React.FC<CarouselProps>;
+  export default Carousel;
 }

@@ -29,18 +29,14 @@ export default function Navbar() {
           <SearchForm />
         </div>
        <div className="flex gap-8">
-          {status === "unauthenticated" ? (
-            <Link
-              href="/login"
-              className="flex items-center space-x-1 text-green-950 dark:text-slate-100"
-            >
+         
               <User />
               <span>Login</span>
-            </Link>
-             ) : (
+            
+          
                <UserAvatar  />
          
- )}
+ 
          
            <HelpModal />
           <CartCount />

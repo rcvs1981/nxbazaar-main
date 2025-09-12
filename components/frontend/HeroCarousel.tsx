@@ -1,13 +1,20 @@
 "use client";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import type { CarouselProps } from "nuka-carousel";
 
-import Carousel from "nuka-carousel/lib/carousel";
-type Banner = {
+// ✅ Dynamic import with types
+const Carousel = dynamic(
+  () => import("nuka-carousel").then((mod) => mod.default),
+  { ssr: false }
+) as React.FC<CarouselProps>;
+
+export type Banner = {
   id: string | number;
   title: string;
-  imageUrl: string;
+  image: string;
   link: string;
 };
 
@@ -16,32 +23,39 @@ type HeroCarouselProps = {
 };
 
 export default function HeroCarousel({ banners }: HeroCarouselProps) {
-  const config = {
-    nextButtonClassName: "rounded-full",
-    nextButtonText: <ChevronRight />,
-    pagingDotsClassName: "me-2 w-4 h-4",
-    prevButtonClassName: "rounded-full",
-    prevButtonText: <ChevronLeft />,
-  };
-
   return (
-    <Carousel
-      defaultControlsConfig={config}
-      autoplay
-      wrapAround
-      className="rounded-md overflow-hidden"
-    >
-      {banners.map((banner) => (
-        <Link key={banner.id} href={banner.link}>
-          <Image
-            width={712}
-            height={384}
-            src={banner.imageUrl}
-            className="w-full object-cover"
-            alt={banner.title}
-          />
-        </Link>
-      ))}
-    </Carousel>
+    <div className="relative w-full max-w-7xl mx-auto">
+      <Carousel
+        autoplay
+        wrapAround
+        pauseOnHover
+        defaultControlsConfig={{
+          nextButtonText: "›",
+          prevButtonText: "‹",
+          pagingDotsStyle: { fill: "white" },
+        }}
+      >
+        {banners.map((banner) => (
+          <div
+            key={banner.id}
+            className="relative w-full h-[400px] md:h-[500px] lg:h-[600px]"
+          >
+            <Image
+              src={banner.image}
+              alt={banner.title}
+              fill
+              priority
+              className="object-cover"
+            />
+            <Link
+              href={banner.link}
+              className="absolute inset-0 flex items-center justify-center bg-black/40 text-white text-2xl md:text-4xl font-bold"
+            >
+              {banner.title}
+            </Link>
+          </div>
+        ))}
+      </Carousel>
+    </div>
   );
 }
