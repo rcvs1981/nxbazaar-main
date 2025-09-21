@@ -10,7 +10,7 @@ import { getData } from "@/lib/getData";
 export default async function Home() {
   // Fetch categories
 const categoriesData = await getData("categories");
-
+ const{banners} = await getData("banners");
 const categories = categoriesData.filter(
 (category: any) => category.products?.length > 3
 );
@@ -24,7 +24,7 @@ const categories = categoriesData.filter(
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <Hero />
+      <Hero banners={banners} />
 
       {/* Market List */}
       <MarketList />
