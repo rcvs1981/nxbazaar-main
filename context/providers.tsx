@@ -8,14 +8,13 @@ import { Provider } from "react-redux";
 import { store } from "@/redux/store";
 import { ourFileRouter } from "../app/api/uploadthing/core";
 
-type ProvidersProps = {
-  children: ReactNode;
-};
 
-export default function Providers({ children }: ProvidersProps) {
+
+
+export default function Providers({ children }: { children: ReactNode }) {
   return (
 
-    <ThemeProvider attribute="class" defaultTheme="dark">
+     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Toaster position="top-center" reverseOrder={false} />
        <NextSSRPlugin
          
