@@ -54,15 +54,12 @@ export async function GET() {
       include: { products: true },
     });
 
-    return NextResponse.json(categories);
+    // ✅ Always return an array
+    return NextResponse.json(categories ?? []);
   } catch (error) {
-    console.error("GET /api/categories error:", error);
-    return NextResponse.json(
-      {
-        message: "Failed to fetch categories",
-        error: (error as Error).message,
-      },
-      { status: 500 }
-    );
+    console.error("Error fetching categories:", error);
+
+    // ✅ Return empty array on error to prevent `.filter` crash
+    return NextResponse.json([], { status: 200 });
   }
 }
