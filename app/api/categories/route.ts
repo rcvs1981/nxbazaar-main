@@ -1,65 +1,59 @@
-
-
-import { db } from "@/lib/db";
+import {db} from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function POST(request:Request) {
   try {
-    const body = await request.json();
-    const { title, slug, imageUrl, description, isActive } = body;
+    const { title, slug, imageUrl, description, isActive } =
+      await request.json();
 
-    // ✅ Check if slug already exists
     const existingCategory = await db.category.findUnique({
-      where: { slug },
+      where: {
+        slug,
+      },
     });
-
     if (existingCategory) {
       return NextResponse.json(
         {
           data: null,
-          message: `Category (${title}) already exists in the database`,
+          message: `Category ( ${title})  already exists in the Database`,
         },
         { status: 409 }
       );
     }
-
-    // ✅ Create new category
     const newCategory = await db.category.create({
-      data: {
-        title,
-        slug,
-        imageUrl,
-        description,
-        isActive,
-      },
+      data: { title, slug, imageUrl, description, isActive },
     });
-
-    return NextResponse.json(newCategory, { status: 201 });
+    return NextResponse.json(newCategory);
   } catch (error) {
-    console.error("POST /api/categories error:", error);
+    console.log(error);
     return NextResponse.json(
       {
-        message: "Failed to create category",
-        error: (error as Error).message,
+        message: "Failed to create Category",
+        error,
       },
       { status: 500 }
     );
   }
 }
-
-export async function GET() {
+export async function GET(_request:Request) {
   try {
     const categories = await db.category.findMany({
-      orderBy: { createdAt: "desc" },
-      include: { products: true },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        products: true,
+      },
     });
-
-    // ✅ Always return an array
-    return NextResponse.json(categories ?? []);
+    return NextResponse.json(categories);
   } catch (error) {
-    console.error("Error fetching categories:", error);
-
-    // ✅ Return empty array on error to prevent `.filter` crash
-    return NextResponse.json([], { status: 200 });
+    console.log(error);
+    return NextResponse.json(
+      {
+        message: "Failed to Fetch Category",
+        error,
+      },
+      { status: 500 }
+    );
   }
 }

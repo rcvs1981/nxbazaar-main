@@ -57,7 +57,7 @@ model Category {
   slug          String        @unique
   imageUrl      String?
   description   String?
-  isActive      Boolean
+ isActive      Boolean         @default(true)
   products      Product[]
   trainings     Training[]
   subCategories SubCategory[]

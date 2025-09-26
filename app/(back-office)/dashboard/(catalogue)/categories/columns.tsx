@@ -1,13 +1,25 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
+
 import { Checkbox } from "@/components/ui/checkbox";
-import { Category } from "@/types/category"; 
-import SortableColumn from "@/components/DataTableColumns/SortableColumn";
-import ImageColumn from "@/components/DataTableColumns/ImageColumn";
+
 import DateColumn from "@/components/DataTableColumns/DateColumn";
+import ImageColumn from "@/components/DataTableColumns/ImageColumn";
+import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
 
+// ✅ Category type (Next.js + Prisma)
+export type Category = {
+  id: string;
+  title: string;
+  imageUrl?: string | null;
+  description?: string | null;
+  isActive: boolean;
+  createdAt: string;
+};
+
+// ✅ Columns definition with types
+import { ColumnDef } from "@tanstack/react-table";
 
 export const columns: ColumnDef<Category>[] = [
   {
@@ -45,29 +57,35 @@ export const columns: ColumnDef<Category>[] = [
     accessorKey: "isActive",
     header: "Active",
     cell: ({ row }) => {
-      const isActive = row.getValue("isActive") as boolean;
-      return <div>{isActive ? "Yes" : "No"}</div>;
+      const active = row.getValue("isActive") as boolean;
+      return (
+        <span
+          className={`px-2 py-1 rounded text-xs ${
+            active ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+          }`}
+        >
+          {active ? "Yes" : "No"}
+        </span>
+      );
     },
   },
   {
     accessorKey: "createdAt",
     header: "Date Created",
-    cell: ({ row }) => (
-      <DateColumn row={row} accessorKey="createdAt" />
-    ),
+    cell: ({ row }) => <DateColumn row={row} accessorKey="createdAt" />,
   },
- {
-  id: "actions",
-  cell: ({ row }) => {
-    const category = row.original;
-    return (
-     <ActionColumn
-  row={row}
-  title="Category"
-  editEndpoint={`categories/update/${category?.id}`}
-  endpoint={`categories/${category?.id}`}
-/>
-    );
-  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const category = row.original;
+      return (
+        <ActionColumn
+          row={row}
+          title="Category"
+          editEndpoint={`categories/update/${category.id}`}
+          endpoint={`categories/${category.id}`}
+        />
+      );
+    },
   },
 ];

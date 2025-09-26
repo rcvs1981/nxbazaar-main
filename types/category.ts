@@ -1,8 +1,8 @@
-export interface Category {
+export type Category = {
   id: string;
   title: string;
-  slug?: string;
-  imageUrl?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+  imageUrl: string | null;
+  description?: string | null;
+  isActive: boolean;   // ✅ यह add करो
+  createdAt: Date;
+};

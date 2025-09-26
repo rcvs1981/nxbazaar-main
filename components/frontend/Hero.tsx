@@ -1,16 +1,23 @@
-import HeroCarousel, { Banner } from "./HeroCarousel";
-import { getData } from "@/lib/getData";
+// components/frontend/Hero.tsx
+import React from "react";
+import HeroCarousel from "./HeroCarousel";
 
-export default async function Hero() {
-  const banners: Banner[] = await getData("banners");
-
-  return (
-    <div className="grid grid-cols-12 gap-8 mb-6 ">
-      {/* ... */}
-      <div className="col-span-full sm:col-span-7 bg-blue-600 rounded-md">
-        <HeroCarousel banners={banners} />
-      </div>
-      {/* ... */}
-    </div>
-  );
+interface Banner {
+  image: string;
+  alt: string;
 }
+
+interface HeroProps {
+  banners: Banner[];
+}
+
+const Hero: React.FC<HeroProps> = ({ banners }) => {
+  return (
+    <section className="relative w-full">
+      <HeroCarousel banners={banners} />
+      {/* Add any additional hero content */}
+    </section>
+  );
+};
+
+export default Hero;
